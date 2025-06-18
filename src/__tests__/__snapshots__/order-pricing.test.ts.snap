@@ -1,0 +1,48 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Order Pricing and Discount Integration Tests Shipping Cost Calculations should calculate shipping cost properly 1`] = `
+{
+  "basePrice": 1500,
+  "discount": 0,
+  "items": [
+    {
+      "distance": 4159.59952360499,
+      "quantity": 10,
+      "shippingCost": 151.82538261158214,
+      "warehouseId": "61fd0974-acbb-4f83-8566-0ad715afdb0b",
+      "warehouseName": "New York",
+    },
+  ],
+  "latitude": 37.7749,
+  "longitude": -122.4194,
+  "quantity": 10,
+  "shippingCost": 151.82538261158214,
+  "totalPrice": 1500,
+}
+`;
+
+exports[`Order Pricing and Discount Integration Tests Shipping Cost Calculations should calculate shipping cost properly 2`] = `
+{
+  "basePrice": 1500,
+  "createdAt": Any<String>,
+  "discount": 0,
+  "id": Any<String>,
+  "items": [
+    {
+      "distance": 4159.59952360499,
+      "quantity": 10,
+      "shippingCost": 151.82538261158214,
+      "warehouseId": "1544206f-9175-4163-b0c1-222595d599ba",
+      "warehouseName": "New York",
+    },
+  ],
+  "latitude": 37.7749,
+  "longitude": -122.4194,
+  "orderNumber": Any<String>,
+  "quantity": 10,
+  "shippingCost": 151.8254,
+  "status": "PENDING",
+  "totalPrice": 1500,
+  "updatedAt": Any<String>,
+}
+`;

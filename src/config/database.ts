@@ -37,7 +37,7 @@ export const testConnection = async (): Promise<void> => {
 export const initDatabase = async (): Promise<void> => {
   try {
     await testConnection();
-    await sequelize.sync({ force: true });
+    await sequelize.sync({ force: config.env !== 'production' });
     logger.info('All models were synchronized successfully.');
 
     // Enable PostGIS extension

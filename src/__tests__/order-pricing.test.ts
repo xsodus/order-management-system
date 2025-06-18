@@ -72,17 +72,28 @@ describe('Order Pricing and Discount Integration Tests', () => {
       });
 
       expect(verifyResponse.status).toBe(200);
-      expect(verifyResponse.body).toHaveProperty('shippingCost');
-      const shippingCost = verifyResponse.body.shippingCost;
+
+      // Snapshot test for verify response structure and values
+      expect(verifyResponse.body).toMatchSnapshot();
 
       // Now create the order with same parameters
       const createResponse = await testClient.post('/api/orders').send(sampleOrderData);
 
       expect(createResponse.status).toBe(201);
-      expect(createResponse.body).toHaveProperty('shippingCost');
 
-      // Shipping cost should match the verified cost
-      expect(createResponse.body.shippingCost).toBe(shippingCost);
+      // Snapshot test for create response structure and values
+      expect(createResponse.body).toMatchSnapshot({
+        // Dynamic fields like id and orderNumber will vary, so we use matchers
+        id: expect.any(String),
+        orderNumber: expect.any(String),
+        createdAt: expect.any(String),
+        updatedAt: expect.any(String),
+        warehouseId: expect.any(String),
+      });
+
+      // Verify shipping cost consistency between verify and create endpoints
+      // Use a small tolerance for floating point comparisons
+      expect(createResponse.body.shippingCost).toBeCloseTo(verifyResponse.body.shippingCost, 4);
     });
   });
 

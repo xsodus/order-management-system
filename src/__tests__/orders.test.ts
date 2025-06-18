@@ -1,7 +1,23 @@
 // orders.test.ts
 import { testClient, sampleOrderData } from './testHelpers';
-import { Order, OrderStatus } from '../models/order.model';
-import Decimal from 'decimal.js';
+import { OrderStatus } from '../models/order.model';
+
+import { Order, OrderItem } from '../models/order.model';
+import Warehouse, { seedWarehouses } from '../models/warehouse.model';
+
+// Clean up after each test
+afterEach(async () => {
+  try {
+    await Warehouse.truncate({ cascade: true, force: true });
+    await seedWarehouses();
+    // Truncate order items first due to foreign key constraints
+    await OrderItem.destroy({ where: {}, truncate: true, cascade: true });
+    // Then truncate orders
+    await Order.destroy({ where: {}, truncate: true, cascade: true });
+  } catch (error) {
+    console.error('Failed to clean up test data:', error);
+  }
+});
 
 describe('Order API Integration Tests', () => {
   let orderId: string;
