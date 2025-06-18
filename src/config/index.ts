@@ -18,7 +18,6 @@ interface DatabaseConfig {
   database: string;
   username: string;
   password: string;
-  storage?: string;
   logging: boolean | ((sql: string) => void);
   pool: {
     max: number;
@@ -60,7 +59,6 @@ const config: Config = {
     database: process.env.DB_NAME || 'order_management_db',
     username: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'order-management',
-    storage: process.env.NODE_ENV === 'test' ? ':memory:' : undefined,
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
       max: 5,

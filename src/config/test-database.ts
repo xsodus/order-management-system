@@ -2,7 +2,7 @@ import { GenericContainer, StartedTestContainer, Wait } from 'testcontainers';
 import { Sequelize } from 'sequelize';
 import logger from '../utils/logger';
 
-export class TestDatabase {
+class TestDatabase {
   private container: StartedTestContainer | null = null;
   private sequelize: Sequelize | null = null;
 
@@ -114,5 +114,4 @@ export class TestDatabase {
   }
 }
 
-// Global test database instance
 export const testDatabase = new TestDatabase();

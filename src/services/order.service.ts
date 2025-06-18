@@ -155,7 +155,7 @@ export class OrderService {
       distance: number;
     }>
   > {
-    // Create a geography point from the target coordinates
+    // Use PostgreSQL with PostGIS for distance calculation
     const query = `
       SELECT 
         id,
@@ -168,23 +168,15 @@ export class OrderService {
         ST_Distance(
           location,
           ST_SetSRID(ST_MakePoint(:targetLng, :targetLat), 4326)::geography
-        ) / 1000 AS distance,
-        -- Alternative that returns the same distance but optimized for indexed search
-        -- ST_DistanceSphere(
-        --   ST_MakePoint(longitude, latitude),
-        --   ST_MakePoint(:targetLng, :targetLat)
-        -- ) / 1000 AS distance
-        -- Add for optimization when using KNN searches
-        -- location <-> ST_SetSRID(ST_MakePoint(:targetLng, :targetLat), 4326)::geography AS knn_distance
-      FROM warehouses
-      WHERE stock > 0
-      -- Use distance-based index for better performance
-      -- If using KNN, could replace with: ORDER BY knn_distance
-      ORDER BY distance ASC
-    `;
+          ) / 1000 AS distance
+        FROM warehouses
+        WHERE stock > 0
+        ORDER BY distance ASC
+      `;
+    const replacements = { targetLat, targetLng };
 
     const results = await sequelize.query(query, {
-      replacements: { targetLat, targetLng },
+      replacements,
       type: QueryTypes.SELECT,
     });
 
