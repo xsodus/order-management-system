@@ -86,7 +86,7 @@ POST /orders
 - [x] Approach the solution like a **production system**
 - [x] Consider performance, scalability, consistency, extensibility
 - [x] It should be **easy to start the application and run tests locally**
-- [ ] Deploying the app to azure app service via GitHub workflow
+- [ ] Deploying the app to Azure App service via GitHub workflow
 - [x] Implement logging with timestamps with winston library for request tracking and debugging
 - [x] Use decimal data type of decimal.js for financial number and calculation.
 - [x] Add `basePrice` to display on the response of API
