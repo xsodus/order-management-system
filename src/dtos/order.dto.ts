@@ -1,46 +1,51 @@
-import { OrderStatus, OrderItem } from '../models/order.model';
+import { OrderStatus } from '../models/order.model';
 
-export interface CreateOrderDto {
-  customerId: string;
-  customerName: string;
-  items: {
-    productId: string;
-    productName: string;
-    quantity: number;
-    unitPrice: number;
-  }[];
+// DTO for verifying an order without submitting
+export interface VerifyOrderDto {
+  quantity: number;
+  latitude: number;
+  longitude: number;
 }
 
+// DTO for creating a new order
+export interface CreateOrderDto {
+  quantity: number;
+  latitude: number;
+  longitude: number;
+}
+
+// DTO for updating order status
 export interface UpdateOrderStatusDto {
   status: OrderStatus;
 }
 
-export interface AddOrderItemDto {
-  productId: string;
-  productName: string;
+// Warehouse allocation in response
+export interface WarehouseAllocationDto {
+  warehouseId: string;
+  warehouseName: string;
   quantity: number;
-  unitPrice: number;
+  distance: number;
+  shippingCost: number;
 }
 
-export interface UpdateOrderItemDto {
-  itemId: string;
-  quantity?: number;
-  unitPrice?: number;
-}
-
+// Response DTO for verification and creation
 export interface OrderResponseDto {
-  id: string;
-  orderNumber: string;
-  customerId: string;
-  customerName: string;
-  orderDate: string;
-  status: OrderStatus;
-  items: OrderItem[];
-  totalAmount: number;
-  createdAt: string;
-  updatedAt: string;
+  id?: string;
+  orderNumber?: string;
+  quantity: number;
+  latitude: number;
+  longitude: number;
+  totalPrice: number;
+  discount: number;
+  shippingCost: number;
+  isValid: boolean;
+  status?: OrderStatus;
+  items?: WarehouseAllocationDto[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
+// Response DTO for a list of orders
 export interface OrdersListResponseDto {
   total: number;
   page: number;
@@ -48,8 +53,8 @@ export interface OrdersListResponseDto {
   orders: OrderResponseDto[];
 }
 
+// Filter DTO for getting orders
 export interface OrderFilterDto {
-  customerId?: string;
   status?: OrderStatus;
   startDate?: string;
   endDate?: string;
@@ -62,14 +67,17 @@ export class OrderMapper {
     return {
       id: order.id,
       orderNumber: order.orderNumber,
-      customerId: order.customerId,
-      customerName: order.customerName,
-      orderDate: order.orderDate.toISOString(),
+      quantity: order.quantity,
+      latitude: order.latitude,
+      longitude: order.longitude,
+      totalPrice: order.totalPrice,
+      discount: order.discount,
+      shippingCost: order.shippingCost,
+      isValid: order.isValid !== undefined ? order.isValid : true,
       status: order.status,
       items: order.items,
-      totalAmount: order.totalAmount,
-      createdAt: order.createdAt.toISOString(),
-      updatedAt: order.updatedAt.toISOString(),
+      createdAt: order.createdAt?.toISOString(),
+      updatedAt: order.updatedAt?.toISOString(),
     };
   }
 

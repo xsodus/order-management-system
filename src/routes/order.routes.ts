@@ -3,9 +3,7 @@ import { OrderController } from '../controllers/order.controller';
 import {
   validateCreateOrder,
   validateUpdateOrderStatus,
-  validateAddOrderItem,
-  validateUpdateOrderItem,
-  validateRemoveOrderItem,
+  validateVerifyOrder,
   validateGetOrderById,
   validateDeleteOrder,
   validateOrderFilters,
@@ -13,6 +11,9 @@ import {
 
 const router = Router();
 const orderController = new OrderController();
+
+// Verify order without submitting
+router.get('/verify', validateVerifyOrder, orderController.verifyOrder.bind(orderController));
 
 // Create a new order
 router.post('/', validateCreateOrder, orderController.createOrder.bind(orderController));
@@ -28,23 +29,6 @@ router.patch(
   '/:id/status',
   validateUpdateOrderStatus,
   orderController.updateOrderStatus.bind(orderController),
-);
-
-// Add item to order
-router.post('/:id/items', validateAddOrderItem, orderController.addOrderItem.bind(orderController));
-
-// Update order item
-router.patch(
-  '/:id/items/:itemId',
-  validateUpdateOrderItem,
-  orderController.updateOrderItem.bind(orderController),
-);
-
-// Remove item from order
-router.delete(
-  '/:id/items/:itemId',
-  validateRemoveOrderItem,
-  orderController.removeOrderItem.bind(orderController),
 );
 
 // Delete an order

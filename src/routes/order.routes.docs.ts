@@ -6,9 +6,51 @@ const orderController = new OrderController();
 
 /**
  * @swagger
+ * /orders/verify:
+ *   get:
+ *     summary: Verify a potential order without submitting it
+ *     tags: [Orders]
+ *     parameters:
+ *       - in: query
+ *         name: quantity
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         required: true
+ *         description: Number of devices
+ *       - in: query
+ *         name: latitude
+ *         schema:
+ *           type: number
+ *           format: double
+ *         required: true
+ *         description: Latitude of the shipping address
+ *       - in: query
+ *         name: longitude
+ *         schema:
+ *           type: number
+ *           format: double
+ *         required: true
+ *         description: Longitude of the shipping address
+ *     responses:
+ *       200:
+ *         description: Order verification result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OrderResponseDto'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       500:
+ *         $ref: '#/components/responses/InternalServerError'
+ */
+router.get('/verify', orderController.verifyOrder.bind(orderController));
+
+/**
+ * @swagger
  * /orders:
  *   post:
- *     summary: Create a new order
+ *     summary: Submit a new order
  *     tags: [Orders]
  *     requestBody:
  *       required: true
@@ -22,7 +64,7 @@ const orderController = new OrderController();
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Order'
+ *               $ref: '#/components/schemas/OrderResponseDto'
  *       400:
  *         $ref: '#/components/responses/BadRequest'
  *       500:
@@ -38,10 +80,10 @@ router.post('/', orderController.createOrder.bind(orderController));
  *     tags: [Orders]
  *     parameters:
  *       - in: query
- *         name: customerId
+ *         name: status
  *         schema:
- *           type: string
- *         description: Filter orders by customer ID
+ *           $ref: '#/components/schemas/OrderStatus'
+ *         description: Filter orders by status
  *       - in: query
  *         name: status
  *         schema:
@@ -148,117 +190,6 @@ router.get('/:id', orderController.getOrderById.bind(orderController));
  *         $ref: '#/components/responses/InternalServerError'
  */
 router.patch('/:id/status', orderController.updateOrderStatus.bind(orderController));
-
-/**
- * @swagger
- * /orders/{id}/items:
- *   post:
- *     summary: Add item to order
- *     tags: [Order Items]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: Order ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/AddOrderItemDto'
- *     responses:
- *       200:
- *         description: Item added to order successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Order'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       400:
- *         $ref: '#/components/responses/BadRequest'
- *       500:
- *         $ref: '#/components/responses/InternalServerError'
- */
-router.post('/:id/items', orderController.addOrderItem.bind(orderController));
-
-/**
- * @swagger
- * /orders/{id}/items/{itemId}:
- *   patch:
- *     summary: Update order item
- *     tags: [Order Items]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: Order ID
- *       - in: path
- *         name: itemId
- *         schema:
- *           type: string
- *         required: true
- *         description: Item ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/UpdateOrderItemDto'
- *     responses:
- *       200:
- *         description: Order item updated successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Order'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       400:
- *         $ref: '#/components/responses/BadRequest'
- *       500:
- *         $ref: '#/components/responses/InternalServerError'
- */
-router.patch('/:id/items/:itemId', orderController.updateOrderItem.bind(orderController));
-
-/**
- * @swagger
- * /orders/{id}/items/{itemId}:
- *   delete:
- *     summary: Remove item from order
- *     tags: [Order Items]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: Order ID
- *       - in: path
- *         name: itemId
- *         schema:
- *           type: string
- *         required: true
- *         description: Item ID
- *     responses:
- *       200:
- *         description: Item removed from order successfully
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Order'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       400:
- *         $ref: '#/components/responses/BadRequest'
- *       500:
- *         $ref: '#/components/responses/InternalServerError'
- */
-router.delete('/:id/items/:itemId', orderController.removeOrderItem.bind(orderController));
 
 /**
  * @swagger

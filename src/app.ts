@@ -13,8 +13,15 @@ import { errorMiddleware, AppError } from './middlewares/error.middleware';
 // Import config
 import config from './config';
 import { specs } from './config/swagger.config';
+import { setupDatabase } from './config/db-setup';
 
 const app: Express = express();
+
+// Initialize database
+setupDatabase().catch(err => {
+  console.error('Failed to initialize database:', err);
+  process.exit(1);
+});
 
 // Middleware
 app.use(express.json());

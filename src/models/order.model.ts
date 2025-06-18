@@ -1,4 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
+import { Model, DataTypes, Optional } from 'sequelize';
+import { sequelize } from '../config/database';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
@@ -7,80 +8,176 @@ export enum OrderStatus {
   CANCELLED = 'CANCELLED',
 }
 
-export interface OrderItem {
-  id: string;
-  productId: string;
-  productName: string;
+// Order Item model
+export interface OrderItemAttributes {
+  id?: string;
+  orderId: string;
   quantity: number;
-  unitPrice: number;
+  warehouseId: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface OrderItemCreationAttributes extends Optional<OrderItemAttributes, 'id'> {}
+
+export class OrderItem
+  extends Model<OrderItemAttributes, OrderItemCreationAttributes>
+  implements OrderItemAttributes
+{
+  public id!: string;
+  public orderId!: string;
+  public quantity!: number;
+  public warehouseId!: string;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+}
+
+OrderItem.init(
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    orderId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    warehouseId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        min: 1,
+      },
+    },
+  },
+  {
+    sequelize,
+    tableName: 'order_items',
+  },
+);
+
+// Main Order model
+export interface OrderAttributes {
+  id?: string;
+  orderNumber: string;
+  quantity: number;
+  latitude: number;
+  longitude: number;
   totalPrice: number;
+  discount: number;
+  shippingCost: number;
+  isValid: boolean;
+  status: OrderStatus;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-export interface Order {
-  id: string;
-  customerId: string;
-  customerName: string;
-  orderNumber: string;
-  orderDate: Date;
-  status: OrderStatus;
-  items: OrderItem[];
-  totalAmount: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export interface OrderCreationAttributes
+  extends Optional<
+    OrderAttributes,
+    'id' | 'orderNumber' | 'totalPrice' | 'discount' | 'shippingCost' | 'isValid' | 'status'
+  > {}
 
-export class OrderModel implements Order {
-  id: string;
-  customerId: string;
-  customerName: string;
-  orderNumber: string;
-  orderDate: Date;
-  status: OrderStatus;
-  items: OrderItem[];
-  totalAmount: number;
-  createdAt: Date;
-  updatedAt: Date;
+export class Order
+  extends Model<OrderAttributes, OrderCreationAttributes>
+  implements OrderAttributes
+{
+  public id!: string;
+  public orderNumber!: string;
+  public quantity!: number;
+  public latitude!: number;
+  public longitude!: number;
+  public totalPrice!: number;
+  public discount!: number;
+  public shippingCost!: number;
+  public isValid!: boolean;
+  public status!: OrderStatus;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 
-  constructor(customerId: string, customerName: string, items: OrderItem[]) {
-    this.id = uuidv4();
-    this.customerId = customerId;
-    this.customerName = customerName;
-    this.orderNumber = `ORD-${Date.now().toString().slice(-6)}`;
-    this.orderDate = new Date();
-    this.status = OrderStatus.PENDING;
-    this.items = items;
-    this.totalAmount = this.calculateTotalAmount();
-    this.createdAt = new Date();
-    this.updatedAt = new Date();
-  }
-
-  private calculateTotalAmount(): number {
-    return this.items.reduce((sum, item) => sum + item.totalPrice, 0);
-  }
-
-  updateStatus(status: OrderStatus): void {
+  // Method to update the order status
+  public async updateStatus(status: OrderStatus): Promise<void> {
     this.status = status;
-    this.updatedAt = new Date();
-  }
-
-  addItem(item: OrderItem): void {
-    this.items.push(item);
-    this.totalAmount = this.calculateTotalAmount();
-    this.updatedAt = new Date();
-  }
-
-  removeItem(itemId: string): void {
-    this.items = this.items.filter(item => item.id !== itemId);
-    this.totalAmount = this.calculateTotalAmount();
-    this.updatedAt = new Date();
-  }
-
-  updateItem(updatedItem: OrderItem): void {
-    const index = this.items.findIndex(item => item.id === updatedItem.id);
-    if (index !== -1) {
-      this.items[index] = updatedItem;
-      this.totalAmount = this.calculateTotalAmount();
-      this.updatedAt = new Date();
-    }
+    await this.save();
   }
 }
+
+Order.init(
+  {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
+    orderNumber: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+      defaultValue: () => `ORD-${Date.now().toString().slice(-6)}`,
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        min: 1,
+      },
+    },
+    latitude: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    longitude: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
+    totalPrice: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    discount: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    shippingCost: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      defaultValue: 0,
+    },
+    isValid: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+    status: {
+      type: DataTypes.ENUM(...Object.values(OrderStatus)),
+      allowNull: false,
+      defaultValue: OrderStatus.PENDING,
+    },
+  },
+  {
+    sequelize,
+    tableName: 'orders',
+  },
+);
+
+// Define associations
+Order.hasMany(OrderItem, {
+  sourceKey: 'id',
+  foreignKey: 'orderId',
+  as: 'items',
+  onDelete: 'CASCADE',
+});
+
+OrderItem.belongsTo(Order, {
+  foreignKey: 'orderId',
+  targetKey: 'id',
+});
+
+export default Order;

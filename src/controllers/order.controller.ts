@@ -11,11 +11,56 @@ export class OrderController {
   }
 
   /**
+   * Verify an order without submitting
+   */
+  async verifyOrder(req: Request, res: Response): Promise<void> {
+    try {
+      const { quantity, latitude, longitude } = req.query;
+
+      if (!quantity || !latitude || !longitude) {
+        res.status(400).json({
+          status: 'error',
+          message: 'Quantity, latitude and longitude are required',
+        });
+        return;
+      }
+
+      const result = await this.orderService.verifyOrder({
+        quantity: Number(quantity),
+        latitude: Number(latitude),
+        longitude: Number(longitude),
+      });
+
+      res.status(200).json(OrderMapper.toResponseDto(result));
+    } catch (error: any) {
+      res.status(400).json({
+        status: 'error',
+        message: error.message || 'Failed to verify order',
+      });
+    }
+  }
+
+  /**
    * Create a new order
    */
   async createOrder(req: Request, res: Response): Promise<void> {
     try {
-      const order = await this.orderService.createOrder(req.body);
+      const { quantity, latitude, longitude } = req.body;
+
+      if (!quantity || !latitude || !longitude) {
+        res.status(400).json({
+          status: 'error',
+          message: 'Quantity, latitude and longitude are required',
+        });
+        return;
+      }
+
+      const order = await this.orderService.createOrder({
+        quantity: Number(quantity),
+        latitude: Number(latitude),
+        longitude: Number(longitude),
+      });
+
       res.status(201).json(OrderMapper.toResponseDto(order));
     } catch (error: any) {
       res.status(400).json({
@@ -31,7 +76,6 @@ export class OrderController {
   async getOrders(req: Request, res: Response): Promise<void> {
     try {
       const filters = {
-        customerId: req.query.customerId as string,
         status: req.query.status as OrderStatus,
         startDate: req.query.startDate as string,
         endDate: req.query.endDate as string,
@@ -98,88 +142,6 @@ export class OrderController {
       res.status(400).json({
         status: 'error',
         message: error.message || 'Failed to update order status',
-      });
-    }
-  }
-
-  /**
-   * Add an item to an existing order
-   */
-  async addOrderItem(req: Request, res: Response): Promise<void> {
-    try {
-      const orderId = req.params.id;
-      const order = await this.orderService.addOrderItem(orderId, req.body);
-
-      if (!order) {
-        res.status(404).json({
-          status: 'error',
-          message: 'Order not found',
-        });
-        return;
-      }
-
-      res.status(200).json(OrderMapper.toResponseDto(order));
-    } catch (error: any) {
-      res.status(400).json({
-        status: 'error',
-        message: error.message || 'Failed to add order item',
-      });
-    }
-  }
-
-  /**
-   * Update an existing order item
-   */
-  async updateOrderItem(req: Request, res: Response): Promise<void> {
-    try {
-      const orderId = req.params.id;
-      const itemId = req.params.itemId;
-
-      const order = await this.orderService.updateOrderItem(orderId, {
-        itemId,
-        ...req.body,
-      });
-
-      if (!order) {
-        res.status(404).json({
-          status: 'error',
-          message: 'Order or order item not found',
-        });
-        return;
-      }
-
-      res.status(200).json(OrderMapper.toResponseDto(order));
-    } catch (error: any) {
-      res.status(400).json({
-        status: 'error',
-        message: error.message || 'Failed to update order item',
-      });
-    }
-  }
-
-  /**
-   * Remove an item from an order
-   */
-  async removeOrderItem(req: Request, res: Response): Promise<void> {
-    try {
-      const orderId = req.params.id;
-      const itemId = req.params.itemId;
-
-      const order = await this.orderService.removeOrderItem(orderId, itemId);
-
-      if (!order) {
-        res.status(404).json({
-          status: 'error',
-          message: 'Order or order item not found',
-        });
-        return;
-      }
-
-      res.status(200).json(OrderMapper.toResponseDto(order));
-    } catch (error: any) {
-      res.status(400).json({
-        status: 'error',
-        message: error.message || 'Failed to remove order item',
       });
     }
   }

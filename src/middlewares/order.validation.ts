@@ -23,44 +23,46 @@ const validate = (validations: ValidationChain[]) => {
   };
 };
 
-export const validateCreateOrder = validate([
-  body('customerId')
+// Validation for verify order endpoint
+export const validateVerifyOrder = validate([
+  query('quantity')
     .notEmpty()
-    .withMessage('Customer ID is required')
-    .isString()
-    .withMessage('Customer ID must be a string'),
-
-  body('customerName')
-    .notEmpty()
-    .withMessage('Customer name is required')
-    .isString()
-    .withMessage('Customer name must be a string'),
-
-  body('items').isArray({ min: 1 }).withMessage('At least one item is required'),
-
-  body('items.*.productId')
-    .notEmpty()
-    .withMessage('Product ID is required for each item')
-    .isString()
-    .withMessage('Product ID must be a string'),
-
-  body('items.*.productName')
-    .notEmpty()
-    .withMessage('Product name is required for each item')
-    .isString()
-    .withMessage('Product name must be a string'),
-
-  body('items.*.quantity')
-    .notEmpty()
-    .withMessage('Quantity is required for each item')
+    .withMessage('Quantity is required')
     .isInt({ min: 1 })
     .withMessage('Quantity must be a positive integer'),
 
-  body('items.*.unitPrice')
+  query('latitude')
     .notEmpty()
-    .withMessage('Unit price is required for each item')
-    .isFloat({ min: 0.01 })
-    .withMessage('Unit price must be a positive number'),
+    .withMessage('Latitude is required')
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('Latitude must be a number between -90 and 90'),
+
+  query('longitude')
+    .notEmpty()
+    .withMessage('Longitude is required')
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('Longitude must be a number between -180 and 180'),
+]);
+
+// Validation for create order endpoint
+export const validateCreateOrder = validate([
+  body('quantity')
+    .notEmpty()
+    .withMessage('Quantity is required')
+    .isInt({ min: 1 })
+    .withMessage('Quantity must be a positive integer'),
+
+  body('latitude')
+    .notEmpty()
+    .withMessage('Latitude is required')
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('Latitude must be a number between -90 and 90'),
+
+  body('longitude')
+    .notEmpty()
+    .withMessage('Longitude is required')
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('Longitude must be a number between -180 and 180'),
 ]);
 
 export const validateUpdateOrderStatus = validate([
@@ -77,71 +79,12 @@ export const validateUpdateOrderStatus = validate([
     .withMessage('Invalid status value'),
 ]);
 
-export const validateAddOrderItem = validate([
-  param('id')
-    .notEmpty()
-    .withMessage('Order ID is required')
-    .isUUID()
-    .withMessage('Invalid Order ID format'),
-
-  body('productId')
-    .notEmpty()
-    .withMessage('Product ID is required')
-    .isString()
-    .withMessage('Product ID must be a string'),
-
-  body('productName')
-    .notEmpty()
-    .withMessage('Product name is required')
-    .isString()
-    .withMessage('Product name must be a string'),
-
-  body('quantity')
-    .notEmpty()
-    .withMessage('Quantity is required')
-    .isInt({ min: 1 })
-    .withMessage('Quantity must be a positive integer'),
-
-  body('unitPrice')
-    .notEmpty()
-    .withMessage('Unit price is required')
-    .isFloat({ min: 0.01 })
-    .withMessage('Unit price must be a positive number'),
-]);
-
 export const validateUpdateOrderItem = validate([
   param('id')
     .notEmpty()
     .withMessage('Order ID is required')
     .isUUID()
     .withMessage('Invalid Order ID format'),
-
-  param('itemId')
-    .notEmpty()
-    .withMessage('Item ID is required')
-    .isUUID()
-    .withMessage('Invalid Item ID format'),
-
-  body('quantity').optional().isInt({ min: 1 }).withMessage('Quantity must be a positive integer'),
-
-  body('unitPrice')
-    .optional()
-    .isFloat({ min: 0.01 })
-    .withMessage('Unit price must be a positive number'),
-]);
-
-export const validateRemoveOrderItem = validate([
-  param('id')
-    .notEmpty()
-    .withMessage('Order ID is required')
-    .isUUID()
-    .withMessage('Invalid Order ID format'),
-
-  param('itemId')
-    .notEmpty()
-    .withMessage('Item ID is required')
-    .isUUID()
-    .withMessage('Invalid Item ID format'),
 ]);
 
 export const validateGetOrderById = validate([

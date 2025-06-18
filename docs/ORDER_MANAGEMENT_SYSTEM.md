@@ -52,7 +52,7 @@ There are 2 API endpoints that we need to create
 GET /orders
 ```
 
-[] A sales rep should be able to **verify** a potential order without submitting it, by inputting:
+1. [x] A sales rep should be able to **verify** a potential order without submitting it, by inputting:
 
 - Number of devices
 - Coordinates (latitude/longitude) of the shipping address  
@@ -66,7 +66,7 @@ GET /orders
 POST /orders
 ```
 
-[] A sales rep should be able to **submit** an order by inputting:
+2. [x] A sales rep should be able to **submit** an order by inputting:
 
 - Number of devices
 - Coordinates (latitude/longitude) of the shipping address  
@@ -77,12 +77,12 @@ POST /orders
 
 ### Technical Requirements
 
-[] Implement in **TypeScript**
-[] Store data in a sqlite that works in-memory. And use sequelize as the main interface to connect the database.
-[] Create a database structure based on SCOS Device Information, Warehouses and Stock, API endpoints
-[] Expose a **well-documented API** with swagger API doc
-[] Create integration tests with Jest that focusing only main requirements
-[] Approach the solution like a **production system**
-[] Consider performance, scalability, consistency, extensibility
-[] It should be **easy to start the application and run tests locally**
-[] Deploying the app to a cloud provider and showing a **CI/CD pipeline** is a plus
+- [x] Implement in **TypeScript**
+- [x] Store data in a sqlite that works in-memory. And use sequelize as the main interface to connect the database.
+- [x] Create a database structure based on SCOS Device Information, Warehouses and Stock, API endpoints
+- [x] Expose a **well-documented API** with swagger API doc
+- [ ] Create integration tests with Jest that focusing only main requirements
+- [x] Approach the solution like a **production system**
+- [x] Consider performance, scalability, consistency, extensibility
+- [x] It should be **easy to start the application and run tests locally**
+- [ ] Deploying the app to a cloud provider and showing a **CI/CD pipeline** is a plus

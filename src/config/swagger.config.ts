@@ -8,7 +8,7 @@ const options: swaggerJsdoc.Options = {
       title: 'Order Management API Documentation',
       version,
       description:
-        'API documentation for the Order Management System. This system allows you to create, read, update, and delete orders and their items.',
+        'API documentation for the Order Management System. This system allows you to create, read, update, and delete orders.',
       contact: {
         name: 'API Support',
         email: 'support@example.com',
@@ -26,45 +26,39 @@ const options: swaggerJsdoc.Options = {
           type: 'string',
           enum: ['PENDING', 'PROCESSING', 'COMPLETED', 'CANCELLED'],
         },
-        OrderItem: {
+        WarehouseAllocationDto: {
           type: 'object',
           properties: {
-            id: {
+            warehouseId: {
               type: 'string',
-              description: 'Unique identifier for the order item',
+              description: 'Unique identifier for the warehouse',
               example: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
             },
-            productId: {
+            warehouseName: {
               type: 'string',
-              description: 'Unique identifier for the product',
-              example: 'prod-123',
-            },
-            productName: {
-              type: 'string',
-              description: 'Name of the product',
-              example: 'Mechanical Keyboard',
+              description: 'Name of the warehouse',
+              example: 'Warehouse A',
             },
             quantity: {
               type: 'integer',
-              description: 'Quantity of the product',
+              description: 'Quantity allocated from this warehouse',
               example: 2,
             },
-            unitPrice: {
+            distance: {
               type: 'number',
               format: 'double',
-              description: 'Price per unit',
-              example: 129.99,
+              description: 'Distance from the customer in kilometers',
+              example: 12.5,
             },
-            totalPrice: {
+            shippingCost: {
               type: 'number',
               format: 'double',
-              description: 'Total price for the item (quantity * unitPrice)',
-              example: 259.98,
+              description: 'Shipping cost from this warehouse',
+              example: 25.0,
             },
           },
-          required: ['productId', 'productName', 'quantity', 'unitPrice'],
         },
-        Order: {
+        OrderResponseDto: {
           type: 'object',
           properties: {
             id: {
@@ -77,20 +71,45 @@ const options: swaggerJsdoc.Options = {
               description: 'Unique order number',
               example: 'ORD-123456',
             },
-            customerId: {
-              type: 'string',
-              description: 'Unique identifier for the customer',
-              example: 'cust-987',
+            quantity: {
+              type: 'integer',
+              description: 'Total quantity of devices ordered',
+              example: 10,
             },
-            customerName: {
-              type: 'string',
-              description: 'Name of the customer',
-              example: 'John Doe',
+            latitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Latitude of the shipping address',
+              example: 40.712776,
             },
-            orderDate: {
-              type: 'string',
-              format: 'date-time',
-              description: 'Date and time when the order was placed',
+            longitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Longitude of the shipping address',
+              example: -74.005974,
+            },
+            totalPrice: {
+              type: 'number',
+              format: 'double',
+              description: 'Total price of the order including shipping',
+              example: 259.98,
+            },
+            discount: {
+              type: 'number',
+              format: 'double',
+              description: 'Discount amount applied to the order',
+              example: 25.0,
+            },
+            shippingCost: {
+              type: 'number',
+              format: 'double',
+              description: 'Total shipping cost for the order',
+              example: 15.0,
+            },
+            isValid: {
+              type: 'boolean',
+              description: 'Indicates if the order can be fulfilled',
+              example: true,
             },
             status: {
               $ref: '#/components/schemas/OrderStatus',
@@ -98,14 +117,9 @@ const options: swaggerJsdoc.Options = {
             items: {
               type: 'array',
               items: {
-                $ref: '#/components/schemas/OrderItem',
+                $ref: '#/components/schemas/WarehouseAllocationDto',
               },
-            },
-            totalAmount: {
-              type: 'number',
-              format: 'double',
-              description: 'Total amount of the order',
-              example: 259.98,
+              description: 'Warehouse allocations for this order',
             },
             createdAt: {
               type: 'string',
@@ -119,51 +133,51 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        VerifyOrderDto: {
+          type: 'object',
+          properties: {
+            quantity: {
+              type: 'integer',
+              description: 'Number of devices to order',
+              example: 10,
+            },
+            latitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Latitude of the shipping address',
+              example: 40.712776,
+            },
+            longitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Longitude of the shipping address',
+              example: -74.005974,
+            },
+          },
+          required: ['quantity', 'latitude', 'longitude'],
+        },
         CreateOrderDto: {
           type: 'object',
           properties: {
-            customerId: {
-              type: 'string',
-              description: 'Unique identifier for the customer',
-              example: 'cust-987',
+            quantity: {
+              type: 'integer',
+              description: 'Number of devices to order',
+              example: 10,
             },
-            customerName: {
-              type: 'string',
-              description: 'Name of the customer',
-              example: 'John Doe',
+            latitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Latitude of the shipping address',
+              example: 40.712776,
             },
-            items: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  productId: {
-                    type: 'string',
-                    description: 'Unique identifier for the product',
-                    example: 'prod-123',
-                  },
-                  productName: {
-                    type: 'string',
-                    description: 'Name of the product',
-                    example: 'Mechanical Keyboard',
-                  },
-                  quantity: {
-                    type: 'integer',
-                    description: 'Quantity of the product',
-                    example: 2,
-                  },
-                  unitPrice: {
-                    type: 'number',
-                    format: 'double',
-                    description: 'Price per unit',
-                    example: 129.99,
-                  },
-                },
-                required: ['productId', 'productName', 'quantity', 'unitPrice'],
-              },
+            longitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Longitude of the shipping address',
+              example: -74.005974,
             },
           },
-          required: ['customerId', 'customerName', 'items'],
+          required: ['quantity', 'latitude', 'longitude'],
         },
         UpdateOrderStatusDto: {
           type: 'object',
@@ -173,49 +187,6 @@ const options: swaggerJsdoc.Options = {
             },
           },
           required: ['status'],
-        },
-        AddOrderItemDto: {
-          type: 'object',
-          properties: {
-            productId: {
-              type: 'string',
-              description: 'Unique identifier for the product',
-              example: 'prod-123',
-            },
-            productName: {
-              type: 'string',
-              description: 'Name of the product',
-              example: 'Mechanical Keyboard',
-            },
-            quantity: {
-              type: 'integer',
-              description: 'Quantity of the product',
-              example: 2,
-            },
-            unitPrice: {
-              type: 'number',
-              format: 'double',
-              description: 'Price per unit',
-              example: 129.99,
-            },
-          },
-          required: ['productId', 'productName', 'quantity', 'unitPrice'],
-        },
-        UpdateOrderItemDto: {
-          type: 'object',
-          properties: {
-            quantity: {
-              type: 'integer',
-              description: 'Quantity of the product',
-              example: 3,
-            },
-            unitPrice: {
-              type: 'number',
-              format: 'double',
-              description: 'Price per unit',
-              example: 119.99,
-            },
-          },
         },
         Error: {
           type: 'object',
@@ -253,8 +224,41 @@ const options: swaggerJsdoc.Options = {
             orders: {
               type: 'array',
               items: {
-                $ref: '#/components/schemas/Order',
+                $ref: '#/components/schemas/OrderResponseDto',
               },
+            },
+          },
+        },
+        OrderFilterDto: {
+          type: 'object',
+          properties: {
+            status: {
+              $ref: '#/components/schemas/OrderStatus',
+              description: 'Filter by order status',
+            },
+            startDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Filter orders created after this date',
+              example: '2025-01-01',
+            },
+            endDate: {
+              type: 'string',
+              format: 'date',
+              description: 'Filter orders created before this date',
+              example: '2025-06-30',
+            },
+            page: {
+              type: 'integer',
+              description: 'Page number for pagination',
+              default: 1,
+              example: 1,
+            },
+            limit: {
+              type: 'integer',
+              description: 'Number of items per page',
+              default: 10,
+              example: 10,
             },
           },
         },
@@ -296,10 +300,6 @@ const options: swaggerJsdoc.Options = {
       {
         name: 'Orders',
         description: 'Order management operations',
-      },
-      {
-        name: 'Order Items',
-        description: 'Order items operations',
       },
     ],
   },
