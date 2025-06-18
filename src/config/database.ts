@@ -14,10 +14,9 @@ export const sequelize = new Sequelize({
   logging: config.database.logging,
   pool: config.database.pool,
   dialectOptions:
-    config.database.dialect === 'mysql'
+    config.database.dialect === 'postgres'
       ? {
-          charset: 'utf8mb4',
-          collate: 'utf8mb4_unicode_ci',
+          ssl: config.env === 'production' ? { rejectUnauthorized: false } : false,
         }
       : undefined,
   define: {

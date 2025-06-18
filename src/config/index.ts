@@ -12,7 +12,7 @@ dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 dotenv.config();
 
 interface DatabaseConfig {
-  dialect: 'mysql' | 'sqlite';
+  dialect: 'postgres' | 'sqlite';
   host?: string;
   port?: number;
   database: string;
@@ -54,11 +54,11 @@ const config: Config = {
   logFormat: process.env.LOG_FORMAT || (process.env.NODE_ENV === 'production' ? 'combined' : 'dev'),
   logLevel: process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug'),
   database: {
-    dialect: (process.env.DB_DIALECT as 'mysql' | 'sqlite') || 'sqlite',
+    dialect: (process.env.DB_DIALECT as 'postgres' | 'sqlite') || 'sqlite',
     host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '3306', 10),
+    port: parseInt(process.env.DB_PORT || '5432', 10),
     database: process.env.DB_NAME || 'order_management_db',
-    username: process.env.DB_USER || 'root',
+    username: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'order-management',
     storage: process.env.NODE_ENV === 'test' ? ':memory:' : undefined,
     logging: process.env.NODE_ENV === 'development' ? console.log : false,

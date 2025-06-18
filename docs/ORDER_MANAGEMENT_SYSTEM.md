@@ -91,14 +91,21 @@ POST /orders
 - [x] Refactor to remove `isValid` and transform to 400 HTTP status instead if the order request is not valid.
 - [x] Add `basePrice` to display on the response of API
 - [x] **Database Migration**:
-  - Replace SQLite in-memory database with MySQL running in Docker Compose
-  - Configure MySQL to store data in ./data folder for persistence
-  - Use root/order-management as development credentials
+  - Replace SQLite in-memory database with PostgreSQL running in Docker Compose
+  - Configure PostgreSQL to store data in ./data folder for persistence
+  - Use order_user/order-management as development credentials
 - [x] **Environment Configuration**:
   - Create separate environment files for production and development
   - Configure database connection settings in each environment
   - Set appropriate logging levels for each environment
 - [x] **Testing Infrastructure**:
-  - Integrate `testcontainers` library for running integration tests with MySQL database
+  - Integrate `testcontainers` library for running integration tests with PostgreSQL database
   - Configure tests to spin up isolated Docker containers for testing
   - Ensure tests can run independently of local environment
+- [x] **Database Migration to PostgreSQL**:
+  - Replace MySQL to PostgreSQL with proper UTF8 encoding
+  - Configure PostgreSQL to support efficient queries
+  - Update connection settings and data models to work with PostgreSQL
+  - Update Docker Compose configuration for PostgreSQL
+  - Implement proper database initialization scripts
+  - Remove unused node libraries

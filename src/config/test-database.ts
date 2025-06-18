@@ -12,29 +12,30 @@ export class TestDatabase {
     }
 
     try {
-      logger.info('Starting MySQL test container...');
+      logger.info('Starting PostgreSQL test container...');
 
-      this.container = await new GenericContainer('mysql:8.0')
+      this.container = await new GenericContainer('postgres:16')
         .withEnvironment({
-          MYSQL_DATABASE: 'order_management_test',
-          MYSQL_ROOT_PASSWORD: 'test-password',
+          POSTGRES_DB: 'order_management_test',
+          POSTGRES_USER: 'postgres',
+          POSTGRES_PASSWORD: 'test-password',
         })
-        .withExposedPorts(3306)
-        .withWaitStrategy(Wait.forLogMessage('ready for connections', 2))
+        .withExposedPorts(5432)
+        .withWaitStrategy(Wait.forLogMessage('database system is ready to accept connections', 2))
         .withStartupTimeout(120000)
         .start();
 
       const host = this.container.getHost();
-      const port = this.container.getMappedPort(3306);
+      const port = this.container.getMappedPort(5432);
 
-      logger.info(`MySQL test container started at ${host}:${port}`);
+      logger.info(`PostgreSQL test container started at ${host}:${port}`);
 
       this.sequelize = new Sequelize({
-        dialect: 'mysql',
+        dialect: 'postgres',
         host,
         port,
         database: 'order_management_test',
-        username: 'root',
+        username: 'postgres',
         password: 'test-password',
         logging: false,
         pool: {
@@ -44,8 +45,7 @@ export class TestDatabase {
           idle: 10000,
         },
         dialectOptions: {
-          charset: 'utf8mb4',
-          collate: 'utf8mb4_unicode_ci',
+          ssl: false,
         },
         define: {
           timestamps: true,

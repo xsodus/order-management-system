@@ -10,12 +10,12 @@ let testSequelize: any = null;
 // Setup before all tests
 beforeAll(async () => {
   try {
-    // Use testcontainers for MySQL if explicitly enabled and Docker is available
+    // Use testcontainers for PostgreSQL if explicitly enabled and Docker is available
     const useTestcontainers =
-      process.env.USE_TESTCONTAINERS === 'true' && process.env.DB_DIALECT === 'mysql';
+      process.env.USE_TESTCONTAINERS === 'true' && process.env.DB_DIALECT === 'postgres';
 
     if (useTestcontainers) {
-      console.log('Attempting to use testcontainers for MySQL database...');
+      console.log('Attempting to use testcontainers for PostgreSQL database...');
       try {
         testSequelize = await testDatabase.start();
 
@@ -67,7 +67,7 @@ beforeAll(async () => {
           },
         ]);
 
-        console.log('Successfully set up testcontainers MySQL database');
+        console.log('Successfully set up testcontainers PostgreSQL database');
       } catch (containerError: any) {
         console.warn(
           'Failed to start testcontainers, falling back to SQLite:',

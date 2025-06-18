@@ -4,9 +4,9 @@
 
 ✅ **Database Migration Completed:**
 
-- Migrated from SQLite in-memory to MySQL with Docker Compose
+- Migrated from SQLite in-memory to PostgreSQL with Docker Compose
 - Added persistent data storage in `./data` directory
-- Configured MySQL 8.0 with proper charset and collation
+- Configured PostgreSQL 16 with proper UTF8 encoding
 - Created database initialization scripts
 
 ✅ **Environment Configuration Completed:**
@@ -18,7 +18,7 @@
 
 ✅ **Testing Infrastructure Completed:**
 
-- Integrated testcontainers for MySQL testing
+- Integrated testcontainers for PostgreSQL testing
 - Added fallback to SQLite when Docker is unavailable
 - Updated Jest configuration for better test isolation
 - Created robust test setup with proper cleanup
@@ -31,10 +31,10 @@
 yarn install
 ```
 
-### 2. Start MySQL Database (Optional - for development)
+### 2. Start PostgreSQL Database (Optional - for development)
 
 ```bash
-# Start MySQL container
+# Start PostgreSQL container
 yarn db:up
 
 # Run database migration to populate initial data
@@ -47,7 +47,7 @@ yarn db:logs
 ### 3. Run the Application
 
 ```bash
-# Development mode (uses SQLite by default, MySQL if Docker is running)
+# Development mode (uses SQLite by default, PostgreSQL if Docker is running)
 yarn dev
 
 # Production mode
@@ -60,8 +60,8 @@ NODE_ENV=production yarn start
 # Run tests with SQLite (fast, no Docker required)
 yarn test
 
-# Run tests with MySQL containers (requires Docker)
-yarn test:mysql
+# Run tests with PostgreSQL containers (requires Docker)
+yarn test:postgres
 
 # Run with coverage
 yarn test:coverage
@@ -86,25 +86,25 @@ The application now supports three environments:
 
 ### Development (`.env.development`)
 
-- Uses MySQL if Docker is running, SQLite otherwise
+- Uses PostgreSQL if Docker is running, SQLite otherwise
 - Debug logging enabled
 - Swagger UI enabled
 
 ### Production (`.env.production`)
 
-- Uses MySQL database
+- Uses PostgreSQL database
 - Info-level logging
 - Swagger UI disabled
 
 ### Test (`.env.test`)
 
-- Uses testcontainers for MySQL when available
+- Uses testcontainers for PostgreSQL when available
 - SQLite fallback for CI/fast testing
 - Error-level logging only
 
 ## Database Connection Details
 
-When using MySQL (development/production):
+When using PostgreSQL (development/production):
 
 - **Host:** localhost
 - **Port:** 3306
@@ -118,9 +118,9 @@ When using MySQL (development/production):
 ├── .env.development     # Development environment config
 ├── .env.production      # Production environment config
 ├── .env.test           # Test environment config
-├── docker-compose.yml  # MySQL container definition
+├── docker-compose.yml  # PostgreSQL container definition
 ├── docker/
-│   └── mysql/
+│   └── postgres/
 │       └── init/       # Database initialization scripts
 ├── src/
 │   ├── config/
@@ -139,9 +139,9 @@ When using MySQL (development/production):
 
 The database migration and environment configuration are now complete. The application can:
 
-1. ✅ Run with persistent MySQL storage in development
+1. ✅ Run with persistent PostgreSQL storage in development
 2. ✅ Use environment-specific configurations
-3. ✅ Run tests with both SQLite and MySQL
+3. ✅ Run tests with both SQLite and PostgreSQL
 4. ✅ Handle database initialization and migration
 5. ✅ Support Docker-based development workflow
 

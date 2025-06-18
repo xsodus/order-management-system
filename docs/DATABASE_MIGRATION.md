@@ -1,10 +1,10 @@
 # Database Migration and Environment Configuration
 
-This document explains the database migration from SQLite to MySQL and the new environment configuration system.
+This document explains the database migration from SQLite to PostgreSQL and the new environment configuration system.
 
 ## Overview
 
-The application has been migrated from using an in-memory SQLite database to a persistent MySQL database with Docker Compose for local development and testcontainers for integration testing.
+The application has been migrated from using an in-memory SQLite database to a persistent PostgreSQL database with Docker Compose for local development and testcontainers for integration testing.
 
 ## Environment Configuration
 
@@ -19,11 +19,11 @@ The application now supports multiple environments with dedicated configuration 
 | Variable          | Description       | Development         | Production          | Test                  |
 | ----------------- | ----------------- | ------------------- | ------------------- | --------------------- |
 | `NODE_ENV`        | Environment name  | development         | production          | test                  |
-| `DB_DIALECT`      | Database type     | mysql               | mysql               | mysql                 |
+| `DB_DIALECT`      | Database type     | postgres            | postgres            | postgres              |
 | `DB_HOST`         | Database host     | localhost           | localhost           | localhost             |
-| `DB_PORT`         | Database port     | 3306                | 3306                | 3306                  |
+| `DB_PORT`         | Database port     | 5432                | 5432                | 5432                  |
 | `DB_NAME`         | Database name     | order_management_db | order_management_db | order_management_test |
-| `DB_USER`         | Database user     | root                | root                | root                  |
+| `DB_USER`         | Database user     | order_user          | postgres            | postgres              |
 | `DB_PASSWORD`     | Database password | order-management    | order-management    | test-password         |
 | `LOG_LEVEL`       | Logging level     | debug               | info                | error                 |
 | `SWAGGER_ENABLED` | Enable Swagger UI | true                | false               | false                 |
@@ -38,13 +38,13 @@ The application now supports multiple environments with dedicated configuration 
 
 ### Local Development
 
-1. **Start MySQL Database:**
+1. **Start PostgreSQL Database:**
 
    ```bash
    yarn db:up
    ```
 
-   This starts a MySQL 8.0 container with persistent storage in the `./data` directory.
+   This starts a PostgreSQL 16 container with persistent storage in the `./data` directory.
 
 2. **Run Database Migration:**
 
@@ -80,18 +80,18 @@ The application now supports multiple environments with dedicated configuration 
 ### Database Connection Details
 
 - **Host:** localhost
-- **Port:** 3306
+- **Port:** 5432
 - **Database:** order_management_db
-- **Username:** root
+- **Username:** order_user
 - **Password:** order-management
 
-You can connect to the database using any MySQL client with these credentials.
+You can connect to the database using any PostgreSQL client with these credentials.
 
 ## Testing Infrastructure
 
 ### Testcontainers Integration
 
-The application uses testcontainers for integration testing, which automatically spins up isolated MySQL containers for each test run.
+The application uses testcontainers for integration testing, which automatically spins up isolated PostgreSQL containers for each test run.
 
 ### Running Tests
 
@@ -101,10 +101,10 @@ The application uses testcontainers for integration testing, which automatically
    yarn test
    ```
 
-2. **Tests with MySQL Testcontainers:**
+2. **Tests with PostgreSQL Testcontainers:**
 
    ```bash
-   yarn test:mysql
+   yarn test:postgres
    ```
 
 3. **Watch Mode:**
@@ -129,7 +129,7 @@ The application uses testcontainers for integration testing, which automatically
 
 The `docker-compose.yml` file includes:
 
-- MySQL 8.0 with persistent storage
+- PostgreSQL 16 with persistent storage
 - Health checks for database readiness
 - Custom initialization scripts
 - Volume mounting for data persistence
@@ -138,9 +138,9 @@ The `docker-compose.yml` file includes:
 
 ```
 data/
-└── mysql/          # MySQL data directory (auto-created)
+└── postgres/       # PostgreSQL data directory (auto-created)
 docker/
-└── mysql/
+└── postgres/
     └── init/
         └── 01-init.sql  # Database initialization script
 ```
@@ -158,15 +158,15 @@ The migration script (`src/scripts/migrate.ts`) handles:
 
 ### Common Issues
 
-1. **Port 3306 already in use:**
+1. **Port 5432 already in use:**
 
    ```bash
    # Check what's using the port
-   lsof -i :3306
+   lsof -i :5432
 
-   # Stop any existing MySQL service
-   brew services stop mysql  # macOS
-   sudo systemctl stop mysql  # Linux
+   # Stop any existing PostgreSQL service
+   brew services stop postgresql  # macOS
+   sudo systemctl stop postgresql  # Linux
    ```
 
 2. **Permission denied for data directory:**
@@ -212,11 +212,12 @@ yarn migrate
 
 For production deployment:
 
-1. Use a managed database service (AWS RDS, Google Cloud SQL, etc.)
+1. Use a managed database service (AWS RDS, Google Cloud SQL, Azure Database for PostgreSQL, etc.)
 2. Update `.env.production` with production database credentials
 3. Set `NODE_ENV=production`
 4. Ensure proper security groups and firewall rules
 5. Use environment variables or secret management instead of .env files
+6. Enable SSL/TLS connections for PostgreSQL in production
 
 ## Security Considerations
 
