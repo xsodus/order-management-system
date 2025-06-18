@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { body, param, query, validationResult, ValidationChain } from 'express-validator';
-import { OrderStatus } from '../models/order.model';
+import { body, query, validationResult, ValidationChain } from 'express-validator';
 
 // Middleware to validate request
 const validate = (validations: ValidationChain[]) => {
@@ -62,76 +61,3 @@ export const validateCreateOrder = validate([
     .isFloat({ min: -180, max: 180 })
     .withMessage('Longitude must be a number between -180 and 180'),
 ]);
-
-export const validateUpdateOrderStatus = validate([
-  param('id')
-    .notEmpty()
-    .withMessage('Order ID is required')
-    .isUUID()
-    .withMessage('Invalid Order ID format'),
-
-  body('status')
-    .notEmpty()
-    .withMessage('Status is required')
-    .isIn(Object.values(OrderStatus))
-    .withMessage('Invalid status value'),
-]);
-
-export const validateUpdateOrderItem = validate([
-  param('id')
-    .notEmpty()
-    .withMessage('Order ID is required')
-    .isUUID()
-    .withMessage('Invalid Order ID format'),
-]);
-
-export const validateGetOrderById = validate([
-  param('id')
-    .notEmpty()
-    .withMessage('Order ID is required')
-    .isUUID()
-    .withMessage('Invalid Order ID format'),
-]);
-
-export const validateDeleteOrder = validate([
-  param('id')
-    .notEmpty()
-    .withMessage('Order ID is required')
-    .isUUID()
-    .withMessage('Invalid Order ID format'),
-]);
-
-export const validateOrderFilters = validate([
-  query('customerId').optional().isString().withMessage('Customer ID must be a string'),
-
-  query('status').optional().isIn(Object.values(OrderStatus)).withMessage('Invalid status value'),
-
-  query('startDate').optional().isISO8601().withMessage('Start date must be a valid ISO8601 date'),
-
-  query('endDate').optional().isISO8601().withMessage('End date must be a valid ISO8601 date'),
-
-  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
-
-  query('limit')
-    .optional()
-    .isInt({ min: 1, max: 100 })
-    .withMessage('Limit must be between 1 and 100'),
-]);
-
-// Utility function for manual validation as fallback
-export const validateCoordinates = (latitude: number, longitude: number): string | null => {
-  if (isNaN(latitude) || latitude < -90 || latitude > 90) {
-    return 'Latitude must be a number between -90 and 90';
-  }
-  if (isNaN(longitude) || longitude < -180 || longitude > 180) {
-    return 'Longitude must be a number between -180 and 180';
-  }
-  return null;
-};
-
-export const validateQuantity = (quantity: number): string | null => {
-  if (isNaN(quantity) || quantity < 1) {
-    return 'Quantity must be a positive integer';
-  }
-  return null;
-};

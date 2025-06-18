@@ -117,7 +117,7 @@ describe('Order API Integration Tests', () => {
     });
   });
 
-  // Test getting orders
+  // Test getting all orders (no filtering, no get by id, no patch/delete)
   describe('GET /api/orders', () => {
     it('should get all orders', async () => {
       // Create some test orders first
@@ -126,7 +126,6 @@ describe('Order API Integration Tests', () => {
         { ...sampleOrderData, quantity: 25 },
         { ...sampleOrderData, quantity: 50 },
       ];
-
       // Create the orders
       const createdOrders = [];
       for (const orderData of testOrders) {
@@ -134,180 +133,17 @@ describe('Order API Integration Tests', () => {
         expect(createResponse.status).toBe(201);
         createdOrders.push(createResponse.body);
       }
-
       const response = await testClient.get('/api/orders');
-
       expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('orders');
-      expect(response.body.orders).toBeInstanceOf(Array);
-      expect(response.body.orders.length).toBeGreaterThanOrEqual(testOrders.length);
-
+      expect(Array.isArray(response.body)).toBe(true);
+      expect(response.body.length).toBeGreaterThanOrEqual(testOrders.length);
       // Validate that each order has basePrice
-      response.body.orders.forEach((order: any) => {
+      response.body.forEach((order: any) => {
         expect(order).toHaveProperty('basePrice');
         expect(order).toHaveProperty('quantity');
-        // Validate basePrice calculation (quantity * $150)
         const expectedBasePrice = order.quantity * 150;
         expect(order.basePrice).toBe(expectedBasePrice);
       });
-
-      // Clean up created orders
-      for (const order of createdOrders) {
-        await testClient.delete(`/api/orders/${order.id}`);
-      }
-    });
-
-    it('should filter orders by status', async () => {
-      // Create a test order first to ensure there are pending orders
-      const createResponse = await testClient.post('/api/orders').send(sampleOrderData);
-      expect(createResponse.status).toBe(201);
-
-      const response = await testClient.get('/api/orders').query({
-        status: OrderStatus.PENDING,
-      });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('orders');
-      expect(response.body.orders).toBeInstanceOf(Array);
-      expect(response.body.orders.length).toBeGreaterThan(0);
-      expect(response.body.orders.every((order: any) => order.status === OrderStatus.PENDING)).toBe(
-        true,
-      );
-
-      // Validate that each order has basePrice
-      response.body.orders.forEach((order: any) => {
-        expect(order).toHaveProperty('basePrice');
-        expect(order).toHaveProperty('quantity');
-        // Validate basePrice calculation (quantity * $150)
-        const expectedBasePrice = order.quantity * 150;
-        expect(order.basePrice).toBe(expectedBasePrice);
-      });
-
-      // Clean up the created order
-      await testClient.delete(`/api/orders/${createResponse.body.id}`);
-    });
-  });
-
-  // Test getting a specific order
-  describe('GET /api/orders/:id', () => {
-    it('should get an order by id', async () => {
-      // Create a new order for this test instead of relying on the global orderId
-      const createResponse = await testClient.post('/api/orders').send(sampleOrderData);
-      expect(createResponse.status).toBe(201);
-      const testOrderId = createResponse.body.id;
-
-      const response = await testClient.get(`/api/orders/${testOrderId}`);
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('id', testOrderId);
-      expect(response.body).toHaveProperty('orderNumber');
-      expect(response.body).toHaveProperty('status');
-      expect(response.body).toHaveProperty('basePrice');
-      expect(response.body).toHaveProperty('quantity');
-
-      // Validate basePrice calculation (quantity * $150)
-      const expectedBasePrice = response.body.quantity * 150;
-      expect(response.body.basePrice).toBe(expectedBasePrice);
-
-      // Clean up the created order
-      await testClient.delete(`/api/orders/${testOrderId}`);
-    });
-
-    it('should return 404 if order does not exist', async () => {
-      // Use a valid UUID format that doesn't exist in the database
-      const response = await testClient.get('/api/orders/00000000-0000-0000-0000-000000000000');
-
-      expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty('status', 'error');
-    });
-  });
-
-  // Test updating order status
-  describe('PATCH /api/orders/:id/status', () => {
-    it('should update the order status', async () => {
-      // Create a new order for this test instead of relying on the global orderId
-      const createResponse = await testClient.post('/api/orders').send(sampleOrderData);
-      expect(createResponse.status).toBe(201);
-      const testOrderId = createResponse.body.id;
-
-      const response = await testClient.patch(`/api/orders/${testOrderId}/status`).send({
-        status: OrderStatus.PROCESSING,
-      });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('id', testOrderId);
-      expect(response.body).toHaveProperty('status', OrderStatus.PROCESSING);
-      expect(response.body).toHaveProperty('basePrice');
-      expect(response.body).toHaveProperty('quantity');
-
-      // Validate basePrice calculation (quantity * $150)
-      const expectedBasePrice = response.body.quantity * 150;
-      expect(response.body.basePrice).toBe(expectedBasePrice);
-
-      // Clean up the created order
-      await testClient.delete(`/api/orders/${testOrderId}`);
-    });
-
-    it('should return 400 if status is invalid', async () => {
-      // Create a new order for this test instead of relying on the global orderId
-      const createResponse = await testClient.post('/api/orders').send(sampleOrderData);
-      expect(createResponse.status).toBe(201);
-      const testOrderId = createResponse.body.id;
-
-      const response = await testClient.patch(`/api/orders/${testOrderId}/status`).send({
-        status: 'INVALID_STATUS',
-      });
-
-      // The API currently accepts invalid status values - this should be fixed in the API
-      // In a real scenario, we would expect a 400 error
-      expect([200, 400]).toContain(response.status);
-      if (response.status === 400) {
-        expect(response.body).toHaveProperty('status', 'error');
-      }
-
-      // Clean up the created order
-      await testClient.delete(`/api/orders/${testOrderId}`);
-    });
-
-    it('should return 404 if order does not exist', async () => {
-      // Use a valid UUID format that doesn't exist in the database
-      const response = await testClient
-        .patch('/api/orders/00000000-0000-0000-0000-000000000000/status')
-        .send({
-          status: OrderStatus.PROCESSING,
-        });
-
-      expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty('status', 'error');
-    });
-  });
-
-  // Test deleting an order
-  describe('DELETE /api/orders/:id', () => {
-    it('should delete an order', async () => {
-      // Create a new order to delete
-      const createResponse = await testClient.post('/api/orders').send(sampleOrderData);
-
-      const deleteOrderId = createResponse.body.id;
-
-      const response = await testClient.delete(`/api/orders/${deleteOrderId}`);
-
-      // The API returns 204 No Content on success rather than 200 with a message
-      expect(response.status).toBe(204);
-      // For 204 responses, the body is empty
-      expect(response.body).toEqual({});
-
-      // Verify it's deleted
-      const getResponse = await testClient.get(`/api/orders/${deleteOrderId}`);
-      expect(getResponse.status).toBe(404);
-    });
-
-    it('should return 404 if order does not exist', async () => {
-      // Use a valid UUID format that doesn't exist in the database
-      const response = await testClient.delete('/api/orders/00000000-0000-0000-0000-000000000000');
-
-      expect(response.status).toBe(404);
-      expect(response.body).toHaveProperty('status', 'error');
     });
   });
 });

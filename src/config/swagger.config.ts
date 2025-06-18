@@ -8,7 +8,7 @@ const options: swaggerJsdoc.Options = {
       title: 'Order Management API Documentation',
       version,
       description:
-        'API documentation for the Order Management System. This system allows you to create, read, update, and delete orders.',
+        'API documentation for the Order Management System. This system allows you to verify, create, and list orders.',
       contact: {
         name: 'API Support',
         email: 'support@example.com',
@@ -112,7 +112,6 @@ const options: swaggerJsdoc.Options = {
               description: 'Total shipping cost for the order',
               example: 15.0,
             },
-
             status: {
               $ref: '#/components/schemas/OrderStatus',
             },
@@ -181,15 +180,6 @@ const options: swaggerJsdoc.Options = {
           },
           required: ['quantity', 'latitude', 'longitude'],
         },
-        UpdateOrderStatusDto: {
-          type: 'object',
-          properties: {
-            status: {
-              $ref: '#/components/schemas/OrderStatus',
-            },
-          },
-          required: ['status'],
-        },
         Error: {
           type: 'object',
           properties: {
@@ -202,65 +192,6 @@ const options: swaggerJsdoc.Options = {
               type: 'string',
               description: 'Error message',
               example: 'Order not found',
-            },
-          },
-        },
-        OrdersListResponseDto: {
-          type: 'object',
-          properties: {
-            total: {
-              type: 'integer',
-              description: 'Total number of orders available',
-              example: 42,
-            },
-            page: {
-              type: 'integer',
-              description: 'Current page number',
-              example: 1,
-            },
-            limit: {
-              type: 'integer',
-              description: 'Number of orders per page',
-              example: 10,
-            },
-            orders: {
-              type: 'array',
-              items: {
-                $ref: '#/components/schemas/OrderResponseDto',
-              },
-            },
-          },
-        },
-        OrderFilterDto: {
-          type: 'object',
-          properties: {
-            status: {
-              $ref: '#/components/schemas/OrderStatus',
-              description: 'Filter by order status',
-            },
-            startDate: {
-              type: 'string',
-              format: 'date',
-              description: 'Filter orders created after this date',
-              example: '2025-01-01',
-            },
-            endDate: {
-              type: 'string',
-              format: 'date',
-              description: 'Filter orders created before this date',
-              example: '2025-06-30',
-            },
-            page: {
-              type: 'integer',
-              description: 'Page number for pagination',
-              default: 1,
-              example: 1,
-            },
-            limit: {
-              type: 'integer',
-              description: 'Number of items per page',
-              default: 10,
-              example: 10,
             },
           },
         },

@@ -15,11 +15,6 @@ export interface CreateOrderDto {
   longitude: number;
 }
 
-// DTO for updating order status
-export interface UpdateOrderStatusDto {
-  status: OrderStatus;
-}
-
 // Warehouse allocation in response
 export interface WarehouseAllocationDto {
   warehouseId: string;
@@ -46,32 +41,10 @@ export interface OrderResponseDto {
   updatedAt?: string;
 }
 
-// Response DTO for a list of orders
-export interface OrdersListResponseDto {
-  total: number;
-  page: number;
-  limit: number;
-  orders: OrderResponseDto[];
-}
-
-// Filter DTO for getting orders
-export interface OrderFilterDto {
-  status?: OrderStatus;
-  startDate?: string;
-  endDate?: string;
-  page?: number;
-  limit?: number;
-}
-
 export class OrderMapper {
   static toResponseDto(order: any): OrderResponseDto {
-    // Calculate basePrice if not available (for backward compatibility with existing orders)
-    const basePrice = order.basePrice || order.quantity * 150; // 150 is the device price
-
-    // Function to round to 4 decimal places to ensure consistency with database precision
+    const basePrice = order.basePrice || order.quantity * 150;
     const roundTo4 = (num: number) => Math.round(num * 10000) / 10000;
-
-    // Convert Decimal objects to numbers with consistent precision
     const baseNumber = basePrice instanceof Decimal ? basePrice.toNumber() : Number(basePrice);
     const totalNumber =
       order.totalPrice instanceof Decimal ? order.totalPrice.toNumber() : Number(order.totalPrice);
@@ -81,7 +54,6 @@ export class OrderMapper {
       order.shippingCost instanceof Decimal
         ? order.shippingCost.toNumber()
         : Number(order.shippingCost);
-
     return {
       id: order.id,
       orderNumber: order.orderNumber,
@@ -98,7 +70,6 @@ export class OrderMapper {
           item.shippingCost instanceof Decimal
             ? item.shippingCost.toNumber()
             : Number(item.shippingCost);
-
         return {
           warehouseId: item.warehouseId,
           warehouseName: item.warehouseName,
@@ -112,17 +83,7 @@ export class OrderMapper {
     };
   }
 
-  static toListResponseDto(
-    orders: any[],
-    total: number,
-    page: number,
-    limit: number,
-  ): OrdersListResponseDto {
-    return {
-      total,
-      page,
-      limit,
-      orders: orders.map(order => this.toResponseDto(order)),
-    };
+  static toListResponseDto(orders: any[], total: number): OrderResponseDto[] {
+    return orders.map(order => this.toResponseDto(order));
   }
 }

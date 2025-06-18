@@ -89,7 +89,6 @@ POST /orders
 - [ ] Deploying the app to azure app service via GitHub workflow
 - [x] Implement logging with timestamps with winston library for request tracking and debugging
 - [x] Use decimal data type of decimal.js for financial number and calculation.
-- [x] Refactor to remove `isValid` and transform to 400 HTTP status instead if the order request is not valid.
 - [x] Add `basePrice` to display on the response of API
 - [x] **Environment Configuration**:
   - Create separate environment files for production and development

@@ -2,7 +2,6 @@ import Order, { OrderItem, OrderStatus } from '../models/order.model';
 import Product from '../models/product.model';
 import Warehouse from '../models/warehouse.model';
 import { Op, QueryTypes } from 'sequelize';
-import { OrderFilterDto } from '../dtos/order.dto';
 import Decimal from 'decimal.js';
 import { sequelize } from '../config/database';
 
@@ -330,88 +329,21 @@ export class OrderService {
   }
 
   /**
-   * Get all orders with optional filtering
+   * Get all orders (no filtering)
    */
-  async getOrders(filterDto: OrderFilterDto = {}): Promise<{ orders: any[]; total: number }> {
-    const { startDate, endDate, status, page = 1, limit = 10 } = filterDto;
-
-    // Build where clause based on filters
-    const where: any = {};
-
-    if (status) {
-      where.status = status;
-    }
-
-    if (startDate) {
-      where.createdAt = {
-        ...where.createdAt,
-        [Op.gte]: new Date(startDate),
-      };
-    }
-
-    if (endDate) {
-      where.createdAt = {
-        ...where.createdAt,
-        [Op.lte]: new Date(endDate),
-      };
-    }
-
-    // Calculate pagination
-    const offset = (page - 1) * limit;
-
-    // Find orders
+  async getOrders(): Promise<{ orders: any[]; total: number }> {
     const { count, rows } = await Order.findAndCountAll({
-      where,
       include: [
         {
           model: OrderItem,
           as: 'items',
         },
       ],
-      limit,
-      offset,
       order: [['createdAt', 'DESC']],
     });
-
     return {
       orders: rows,
       total: count,
     };
-  }
-
-  /**
-   * Get a specific order by ID
-   */
-  async getOrderById(id: string): Promise<any | null> {
-    return Order.findByPk(id, {
-      include: [
-        {
-          model: OrderItem,
-          as: 'items',
-        },
-      ],
-    });
-  }
-
-  /**
-   * Update an order's status
-   */
-  async updateOrderStatus(id: string, { status }: { status: OrderStatus }): Promise<any | null> {
-    const order = await Order.findByPk(id);
-
-    if (!order) {
-      return null;
-    }
-
-    await order.updateStatus(status);
-    return this.getOrderById(id);
-  }
-
-  /**
-   * Delete an order
-   */
-  async deleteOrder(id: string): Promise<boolean> {
-    const result = await Order.destroy({ where: { id } });
-    return result > 0;
   }
 }
