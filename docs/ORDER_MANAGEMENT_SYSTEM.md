@@ -55,8 +55,10 @@ GET /orders
 1. [x] A sales rep should be able to **verify** a potential order without submitting it, by inputting:
 
 - Number of devices
-- Coordinates (latitude/longitude) of the shipping address  
-  The rep should be able to see:
+- Coordinates (latitude/longitude) of the shipping address
+
+The rep should be able to see:
+
 - Total price
 - Discount
 - Shipping cost
@@ -75,7 +77,7 @@ POST /orders
 - Assign an order number
 - Store total price, discount and shipping cost as calculated at submission time
 
-### Technical Requirements
+### Technical Tasks
 
 - [x] Implement in **TypeScript**
 - [x] Create a database structure based on SCOS Device Information, Warehouses and Stock, API endpoints
@@ -84,7 +86,7 @@ POST /orders
 - [x] Approach the solution like a **production system**
 - [x] Consider performance, scalability, consistency, extensibility
 - [x] It should be **easy to start the application and run tests locally**
-- [ ] Deploying the app to a cloud provider and showing a **CI/CD pipeline** is a plus
+- [ ] Deploying the app to azure app service via GitHub workflow
 - [x] Implement logging with timestamps with winston library for request tracking and debugging
 - [x] Use decimal data type of decimal.js for financial number and calculation.
 - [x] Refactor to remove `isValid` and transform to 400 HTTP status instead if the order request is not valid.
@@ -97,4 +99,4 @@ POST /orders
   - Integrate `testcontainers` library for running integration tests with PostgreSQL database
   - Configure tests to spin up isolated Docker containers for testing
   - Ensure tests can run independently of local environment
-- [ ] Update data warehouse by merging lat, long into GEOGRAPHY then query data by using ST_Distance function from PostGIS extension
+- [x] Update data warehouse to query data by using ST_Distance function from PostGIS extension

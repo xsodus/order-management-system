@@ -5,7 +5,7 @@ import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
 
 // Import routes
-import orderRoutes from './routes/order.routes.docs';
+import orderRoutes from './routes/order.routes';
 
 // Import middleware
 import { errorMiddleware, AppError } from './middlewares/error.middleware';

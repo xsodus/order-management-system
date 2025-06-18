@@ -3,7 +3,6 @@ import { OrderService } from '../services/order.service';
 import { OrderMapper } from '../dtos/order.dto';
 import { OrderStatus } from '../models/order.model';
 import { getRequestLogger } from '../utils/logger/get-request-logger';
-import { validateCoordinates, validateQuantity } from '../middlewares/order.validation';
 
 export class OrderController {
   private orderService: OrderService;
@@ -19,19 +18,6 @@ export class OrderController {
 
     try {
       const { quantity, latitude, longitude } = req.query;
-
-      // Fallback validation in case middleware doesn't catch it
-      const quantityError = validateQuantity(Number(quantity));
-      if (quantityError) {
-        res.status(400).json({ status: 'error', message: quantityError });
-        return;
-      }
-
-      const coordinatesError = validateCoordinates(Number(latitude), Number(longitude));
-      if (coordinatesError) {
-        res.status(400).json({ status: 'error', message: coordinatesError });
-        return;
-      }
 
       logger.debug('Calling order service to verify order', {
         quantity: Number(quantity),
@@ -69,19 +55,6 @@ export class OrderController {
 
     try {
       const { quantity, latitude, longitude } = req.body;
-
-      // Fallback validation in case middleware doesn't catch it
-      const quantityError = validateQuantity(Number(quantity));
-      if (quantityError) {
-        res.status(400).json({ status: 'error', message: quantityError });
-        return;
-      }
-
-      const coordinatesError = validateCoordinates(Number(latitude), Number(longitude));
-      if (coordinatesError) {
-        res.status(400).json({ status: 'error', message: coordinatesError });
-        return;
-      }
 
       logger.debug('Calling order service to create order', {
         quantity: Number(quantity),
