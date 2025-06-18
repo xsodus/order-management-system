@@ -262,3 +262,7 @@ This project uses GitHub Actions for automated deployment to Azure App Service.
 
 You can view the complete workflow configuration in the file:  
  `./.github/workflows/main_akkapon-order-management.yml`
+
+This workflow is automatically triggered whenever you push code to the `main` branch.
+Before pushing, ensure that your `.env.production` file is properly configured.  
+Alternatively, for improved security, you can modify the workflow to generate this file using GitHub secrets instead of committing sensitive information to the repository.
