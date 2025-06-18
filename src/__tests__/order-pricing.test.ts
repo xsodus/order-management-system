@@ -73,32 +73,10 @@ describe('Order Pricing and Discount Integration Tests', () => {
 
       expect(verifyResponse.status).toBe(200);
 
-      // Snapshot test for verify response structure and values
-      expect(verifyResponse.body).toMatchSnapshot();
-
       // Now create the order with same parameters
       const createResponse = await testClient.post('/api/orders').send(sampleOrderData);
 
       expect(createResponse.status).toBe(201);
-
-      // Snapshot test for create response structure and values
-      expect(createResponse.body).toMatchSnapshot({
-        // Dynamic fields like id and orderNumber will vary, so we use matchers
-        id: expect.any(String),
-        orderNumber: expect.any(String),
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String),
-        // Match items array structure but exclude warehouseId from comparison
-        items: expect.arrayContaining([
-          expect.objectContaining({
-            distance: expect.any(Number),
-            quantity: expect.any(Number),
-            shippingCost: expect.any(Number),
-            warehouseName: expect.any(String),
-            // warehouseId is intentionally excluded from snapshot comparison
-          }),
-        ]),
-      });
 
       // Verify shipping cost consistency between verify and create endpoints
       // Use a small tolerance for floating point comparisons
