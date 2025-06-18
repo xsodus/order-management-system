@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import logger from '../utils/logger';
 
 export class AppError extends Error {
   statusCode: number;
@@ -23,10 +24,22 @@ export const errorMiddleware = (
   const status = err instanceof AppError ? err.status : 'error';
   const message = err instanceof AppError ? err.message : 'Something went wrong';
 
-  console.error('ERROR 💥', err);
+  const requestId = req.headers['x-request-id'] || 'unknown';
+
+  const logData = {
+    requestId,
+    path: req.path,
+    method: req.method,
+    statusCode,
+    errorName: err.name,
+    stack: err.stack,
+  };
+
+  logger.error(`Error processing request: ${message}`, logData);
 
   res.status(statusCode).json({
     status,
     message,
+    requestId,
   });
 };

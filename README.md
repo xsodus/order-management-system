@@ -17,6 +17,7 @@ Additionally, it includes:
 - **Middlewares**: For request validation, error handling, etc.
 - **Routes**: To define API endpoints
 - **Config**: For application configuration
+- **Logging**: Winston-based logging system with request tracking
 
 ## API Endpoints
 
@@ -27,6 +28,31 @@ Additionally, it includes:
 - **POST /api/orders** - Create a new order
 - **PATCH /api/orders/:id/status** - Update order status
 - **DELETE /api/orders/:id** - Delete an order
+
+## Logging System
+
+The application uses Winston for logging with the following features:
+
+- **Request ID Tracking**: Each request is assigned a unique ID that is tracked throughout the request lifecycle
+- **Log Levels**: Different log levels (debug, info, warn, error) for different types of messages
+- **Timestamps**: All logs include timestamps in ISO format
+- **Console Output**: Development logs are output to console with colors
+- **File Output**: Logs are also saved to files in the `logs` directory
+  - `logs/combined.log`: All logs
+  - `logs/error.log`: Error logs only
+
+Example usage in controllers:
+
+```typescript
+// Get a logger with request context
+const logger = getRequestLogger(req);
+
+// Log at different levels
+logger.debug('Processing data', { someData: data });
+logger.info('Operation completed', { resultId: result.id });
+logger.warn('Something unusual happened', { details: details });
+logger.error('Operation failed', { error: error.message });
+```
 
 ### Order Items
 

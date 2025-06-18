@@ -9,21 +9,29 @@ import orderRoutes from './routes/order.routes.docs';
 
 // Import middleware
 import { errorMiddleware, AppError } from './middlewares/error.middleware';
+import { requestIdMiddleware } from './middlewares/request-id.middleware';
 
 // Import config
 import config from './config';
 import { specs } from './config/swagger.config';
 import { setupDatabase } from './config/db-setup';
 
+// Import logger
+import logger, { requestLogger } from './utils/logger';
+
 const app: Express = express();
 
 // Initialize database
 setupDatabase().catch(err => {
-  console.error('Failed to initialize database:', err);
+  logger.error('Failed to initialize database:', {
+    error: err.message,
+    stack: err.stack,
+  });
   process.exit(1);
 });
 
 // Middleware
+app.use(requestIdMiddleware); // Add request ID to all requests
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
@@ -33,6 +41,7 @@ app.use(
 );
 app.use(helmet());
 app.use(morgan(config.logFormat));
+app.use(requestLogger); // Add our custom request logger
 
 // Routes
 app.get('/', (req: Request, res: Response) => {

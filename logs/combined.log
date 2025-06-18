@@ -1,0 +1,27 @@
+2025-06-18 08:45:02.773 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:45:24.470 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:45:40.502 [info]: GET /api/orders/verify?quantity=1&latitude=12&longitude=123 200 5ms {"method":"GET","url":"/api/orders/verify?quantity=1&latitude=12&longitude=123","status":200,"duration":5,"ip":"::1","requestId":"112a0dfb-eac6-4844-8a60-681343d63957","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+2025-06-18 08:45:42.404 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:45:49.341 [info]: GET /api/orders/verify?quantity=1000&latitude=12&longitude=123 200 12ms {"method":"GET","url":"/api/orders/verify?quantity=1000&latitude=12&longitude=123","status":200,"duration":12,"ip":"::1","requestId":"21965501-8c39-4ce2-9d34-1a2bde6efb12","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+2025-06-18 08:46:01.250 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:46:23.276 [error]: GET /api/orders/verify?quantity=1000000&latitude=12&longitude=123 400 9ms {"method":"GET","url":"/api/orders/verify?quantity=1000000&latitude=12&longitude=123","status":400,"duration":9,"ip":"::1","requestId":"9480af32-5a28-4020-b3bf-354937df98bc","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+2025-06-18 08:46:43.902 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:46:49.638 [info]: Verifying order {"requestId":"0522938c-69d2-447e-b3f4-34ebf384accc","method":"GET","url":"/api/orders/verify?quantity=1000&latitude=12&longitude=123","query":{"quantity":"1000","latitude":"12","longitude":"123"}}
+2025-06-18 08:46:49.639 [debug]: Calling order service to verify order {"requestId":"0522938c-69d2-447e-b3f4-34ebf384accc","method":"GET","url":"/api/orders/verify?quantity=1000&latitude=12&longitude=123","quantity":1000,"latitude":12,"longitude":123}
+2025-06-18 08:46:49.645 [info]: Order verified successfully {"requestId":"0522938c-69d2-447e-b3f4-34ebf384accc","method":"GET","url":"/api/orders/verify?quantity=1000&latitude=12&longitude=123","isValid":false,"totalPrice":120000}
+2025-06-18 08:46:49.648 [info]: GET /api/orders/verify?quantity=1000&latitude=12&longitude=123 200 10ms {"method":"GET","url":"/api/orders/verify?quantity=1000&latitude=12&longitude=123","status":200,"duration":10,"ip":"::1","requestId":"0522938c-69d2-447e-b3f4-34ebf384accc","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+2025-06-18 08:47:11.723 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:47:34.659 [info]: GET /api/orders?status=PENDING&page=1&limit=10 200 12ms {"method":"GET","url":"/api/orders?status=PENDING&page=1&limit=10","status":200,"duration":12,"ip":"::1","requestId":"50e90b71-8e5a-430b-a35d-212383d90e3d","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}
+2025-06-18 08:47:39.691 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:48:04.558 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:48:56.522 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:49:27.080 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:49:39.001 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:50:00.359 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:50:10.422 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:52:10.638 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:52:45.896 [info]: Server running in development mode on http://localhost:3000 
+2025-06-18 08:52:55.397 [info]: Verifying order {"requestId":"355b4705-95bc-44ae-ab4e-1f2ddb3265d8","method":"GET","url":"/api/orders/verify?quantity=1000&latitude=12&longitude=123","query":{"quantity":"1000","latitude":"12","longitude":"123"}}
+2025-06-18 08:52:55.398 [debug]: Calling order service to verify order {"requestId":"355b4705-95bc-44ae-ab4e-1f2ddb3265d8","method":"GET","url":"/api/orders/verify?quantity=1000&latitude=12&longitude=123","quantity":1000,"latitude":12,"longitude":123}
+2025-06-18 08:52:55.401 [info]: Order verified successfully {"requestId":"355b4705-95bc-44ae-ab4e-1f2ddb3265d8","method":"GET","url":"/api/orders/verify?quantity=1000&latitude=12&longitude=123","isValid":false,"totalPrice":120000}
+2025-06-18 08:52:55.405 [info]: GET /api/orders/verify?quantity=1000&latitude=12&longitude=123 200 8ms {"method":"GET","url":"/api/orders/verify?quantity=1000&latitude=12&longitude=123","status":200,"duration":8,"ip":"::1","requestId":"355b4705-95bc-44ae-ab4e-1f2ddb3265d8","userAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"}

@@ -86,3 +86,4 @@ POST /orders
 - [x] Consider performance, scalability, consistency, extensibility
 - [x] It should be **easy to start the application and run tests locally**
 - [ ] Deploying the app to a cloud provider and showing a **CI/CD pipeline** is a plus
+- [x] Implement logging with timestamps with winston library for request tracking and debugging
