@@ -90,3 +90,15 @@ POST /orders
 - [x] Use decimal data type of decimal.js for financial number and calculation.
 - [x] Refactor to remove `isValid` and transform to 400 HTTP status instead if the order request is not valid.
 - [x] Add `basePrice` to display on the response of API
+- [x] **Database Migration**:
+  - Replace SQLite in-memory database with MySQL running in Docker Compose
+  - Configure MySQL to store data in ./data folder for persistence
+  - Use root/order-management as development credentials
+- [x] **Environment Configuration**:
+  - Create separate environment files for production and development
+  - Configure database connection settings in each environment
+  - Set appropriate logging levels for each environment
+- [x] **Testing Infrastructure**:
+  - Integrate `testcontainers` library for running integration tests with MySQL database
+  - Configure tests to spin up isolated Docker containers for testing
+  - Ensure tests can run independently of local environment

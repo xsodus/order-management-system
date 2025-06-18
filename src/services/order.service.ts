@@ -1,9 +1,10 @@
 import Order, { OrderItem, OrderStatus } from '../models/order.model';
 import Product from '../models/product.model';
 import Warehouse from '../models/warehouse.model';
-import { Op } from 'sequelize';
+import { Op, QueryTypes } from 'sequelize';
 import { OrderFilterDto } from '../dtos/order.dto';
 import Decimal from 'decimal.js';
+import { sequelize } from '../config/database';
 
 interface VerifyOrderDto {
   quantity: number;
@@ -88,49 +89,38 @@ export class OrderService {
 
   /**
    * Find optimal warehouse allocation to minimize shipping cost
+   * Uses SQL-based distance calculation for better performance
    */
   private async findOptimalWarehouses(
     quantity: number,
     latitude: number,
     longitude: number,
   ): Promise<WarehouseAllocation[]> {
-    // Get all warehouses
-    const warehouses = await Warehouse.findAll();
-
-    // Calculate distance and sort by distance (closest first)
-    const warehousesWithDistance = warehouses
-      .map(warehouse => ({
-        warehouse,
-        distance: this.calculateDistance(
-          latitude,
-          longitude,
-          warehouse.latitude,
-          warehouse.longitude,
-        ),
-      }))
-      .sort((a, b) => a.distance - b.distance);
+    // Use SQL query to calculate distances and sort warehouses by proximity
+    // This is much more efficient than fetching all warehouses and calculating distances in JavaScript
+    const warehousesWithDistance = await this.getWarehousesByDistance(latitude, longitude);
 
     // Allocate products from warehouses
     const allocations: WarehouseAllocation[] = [];
     let remainingQuantity = quantity;
 
-    for (const { warehouse, distance } of warehousesWithDistance) {
+    for (const warehouseData of warehousesWithDistance) {
       if (remainingQuantity <= 0) break;
 
       // Determine how many can be shipped from this warehouse
-      const quantityFromWarehouse = Math.min(warehouse.stock, remainingQuantity);
+      const quantityFromWarehouse = Math.min(warehouseData.stock, remainingQuantity);
 
       if (quantityFromWarehouse > 0) {
         // Calculate shipping cost for this allocation
         const shippingCost = this.SHIPPING_RATE.mul(new Decimal(quantityFromWarehouse))
           .mul(this.DEVICE_WEIGHT_KG)
-          .mul(new Decimal(distance));
+          .mul(new Decimal(warehouseData.distance));
 
         allocations.push({
-          warehouseId: warehouse.id,
-          warehouseName: warehouse.name,
+          warehouseId: warehouseData.id,
+          warehouseName: warehouseData.name,
           quantity: quantityFromWarehouse,
-          distance,
+          distance: warehouseData.distance,
           shippingCost,
         });
 
@@ -146,6 +136,57 @@ export class OrderService {
     }
 
     return allocations;
+  }
+
+  /**
+   * Get warehouses ordered by distance using SQL-based calculation
+   * More efficient than fetching all warehouses and calculating distances in JavaScript
+   */
+  private async getWarehousesByDistance(
+    targetLat: number,
+    targetLng: number,
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      latitude: number;
+      longitude: number;
+      stock: number;
+      distance: number;
+    }>
+  > {
+    // Use SQL query with Haversine formula to calculate distances directly in the database
+    // This is much more efficient for large datasets
+    const query = `
+      SELECT 
+        id,
+        name,
+        latitude,
+        longitude,
+        stock,
+        (6371 * 2 * asin(sqrt(
+          pow(sin(radians(latitude - :targetLat) / 2), 2) +
+          cos(radians(:targetLat)) * cos(radians(latitude)) *
+          pow(sin(radians(longitude - :targetLng) / 2), 2)
+        ))) AS distance
+      FROM warehouses
+      WHERE stock > 0
+      ORDER BY distance ASC
+    `;
+
+    const results = await sequelize.query(query, {
+      replacements: { targetLat, targetLng },
+      type: QueryTypes.SELECT,
+    });
+
+    return results as Array<{
+      id: string;
+      name: string;
+      latitude: number;
+      longitude: number;
+      stock: number;
+      distance: number;
+    }>;
   }
 
   /**

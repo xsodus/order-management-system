@@ -9,4 +9,14 @@ module.exports = {
   clearMocks: true,
   resetMocks: true,
   restoreMocks: true,
+  testTimeout: 60000, // 60 seconds for container operations
+  maxWorkers: 1, // Run tests sequentially for database consistency
+  detectOpenHandles: true,
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.test.ts',
+    '!src/__tests__/**',
+    '!src/scripts/**',
+    '!src/server.ts', // Exclude entry point
+  ],
 };
