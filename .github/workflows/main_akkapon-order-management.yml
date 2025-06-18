@@ -34,6 +34,7 @@ jobs:
           cp -r dist deploy/
           cp package.json deploy/
           cp package-lock.json deploy/ || true
+          cp ../.env.production deploy/.env
 
       - name: Zip artifact for deployment
         run: cd deploy && zip -r ../release.zip .
