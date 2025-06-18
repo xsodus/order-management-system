@@ -94,6 +94,22 @@ npm run dev
 
 The server will start at http://localhost:3000.
 
+### Running Tests
+
+Run the integration tests:
+
+```bash
+yarn test
+```
+
+Run tests with coverage:
+
+```bash
+yarn test:coverage
+```
+
+For more details on the integration tests, see [Integration Tests Documentation](docs/INTEGRATION_TESTS.md).
+
 ### API Documentation
 
 The API documentation is available via Swagger UI at:

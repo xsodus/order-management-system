@@ -81,11 +81,11 @@ POST /orders
 - [x] Store data in a sqlite that works in-memory. And use sequelize as the main interface to connect the database.
 - [x] Create a database structure based on SCOS Device Information, Warehouses and Stock, API endpoints
 - [x] Expose a **well-documented API** with swagger API doc
-- [ ] Create integration tests with Jest that focusing only main requirements
+- [ ] Create integration tests againts API with Jest that focusing only main requirements
 - [x] Approach the solution like a **production system**
 - [x] Consider performance, scalability, consistency, extensibility
 - [x] It should be **easy to start the application and run tests locally**
 - [ ] Deploying the app to a cloud provider and showing a **CI/CD pipeline** is a plus
 - [x] Implement logging with timestamps with winston library for request tracking and debugging
 - [x] Use decimal data type of decimal.js for financial number and calculation.
-- [ ] Refactor to remove `isValid` and transform to 400 HTTP status instead if the order request is not valid.
+- [x] Refactor to remove `isValid` and transform to 400 HTTP status instead if the order request is not valid.
