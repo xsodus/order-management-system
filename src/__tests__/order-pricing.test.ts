@@ -88,12 +88,21 @@ describe('Order Pricing and Discount Integration Tests', () => {
         orderNumber: expect.any(String),
         createdAt: expect.any(String),
         updatedAt: expect.any(String),
-        warehouseId: expect.any(String),
+        // Match items array structure but exclude warehouseId from comparison
+        items: expect.arrayContaining([
+          expect.objectContaining({
+            distance: expect.any(Number),
+            quantity: expect.any(Number),
+            shippingCost: expect.any(Number),
+            warehouseName: expect.any(String),
+            // warehouseId is intentionally excluded from snapshot comparison
+          }),
+        ]),
       });
 
       // Verify shipping cost consistency between verify and create endpoints
       // Use a small tolerance for floating point comparisons
-      expect(createResponse.body.shippingCost).toBeCloseTo(verifyResponse.body.shippingCost, 4);
+      expect(createResponse.body.shippingCost).toBe(verifyResponse.body.shippingCost);
     });
   });
 

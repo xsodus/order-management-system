@@ -68,33 +68,45 @@ export class OrderMapper {
     // Calculate basePrice if not available (for backward compatibility with existing orders)
     const basePrice = order.basePrice || order.quantity * 150; // 150 is the device price
 
+    // Function to round to 4 decimal places to ensure consistency with database precision
+    const roundTo4 = (num: number) => Math.round(num * 10000) / 10000;
+
+    // Convert Decimal objects to numbers with consistent precision
+    const baseNumber = basePrice instanceof Decimal ? basePrice.toNumber() : Number(basePrice);
+    const totalNumber =
+      order.totalPrice instanceof Decimal ? order.totalPrice.toNumber() : Number(order.totalPrice);
+    const discountNumber =
+      order.discount instanceof Decimal ? order.discount.toNumber() : Number(order.discount);
+    const shippingCostNumber =
+      order.shippingCost instanceof Decimal
+        ? order.shippingCost.toNumber()
+        : Number(order.shippingCost);
+
     return {
       id: order.id,
       orderNumber: order.orderNumber,
       quantity: order.quantity,
       latitude: order.latitude,
       longitude: order.longitude,
-      // Convert Decimal objects to numbers for API response
-      basePrice: basePrice instanceof Decimal ? basePrice.toNumber() : Number(basePrice),
-      totalPrice:
-        order.totalPrice instanceof Decimal
-          ? order.totalPrice.toNumber()
-          : Number(order.totalPrice),
-      discount:
-        order.discount instanceof Decimal ? order.discount.toNumber() : Number(order.discount),
-      shippingCost:
-        order.shippingCost instanceof Decimal
-          ? order.shippingCost.toNumber()
-          : Number(order.shippingCost),
+      basePrice: roundTo4(baseNumber),
+      totalPrice: roundTo4(totalNumber),
+      discount: roundTo4(discountNumber),
+      shippingCost: roundTo4(shippingCostNumber),
       status: order.status,
-      items: order.items?.map((item: any) => ({
-        ...item,
-        // Convert shippingCost Decimal to number in items as well
-        shippingCost:
+      items: order.items?.map((item: any) => {
+        const itemShippingCost =
           item.shippingCost instanceof Decimal
             ? item.shippingCost.toNumber()
-            : Number(item.shippingCost),
-      })),
+            : Number(item.shippingCost);
+
+        return {
+          warehouseId: item.warehouseId,
+          warehouseName: item.warehouseName,
+          quantity: item.quantity,
+          distance: item.distance,
+          shippingCost: roundTo4(itemShippingCost),
+        };
+      }),
       createdAt: order.createdAt?.toISOString(),
       updatedAt: order.updatedAt?.toISOString(),
     };
