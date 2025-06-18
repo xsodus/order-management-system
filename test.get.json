@@ -1,0 +1,26 @@
+[
+  {
+    "id": "e3167739-d823-4ac1-9329-2b865a0e12cf",
+    "orderNumber": "ORD-739832",
+    "quantity": 10,
+    "latitude": 40.712776,
+    "longitude": -74.005974,
+    "basePrice": 1500,
+    "totalPrice": 1500,
+    "discount": 0,
+    "shippingCost": 0.7608,
+    "status": "PENDING",
+    "items": [
+      {
+        "warehouseId": "b4318ed4-be26-4765-ad3c-66b9347f3265",
+        "warehouseName": "New York",
+        "quantity": 10,
+        "shippingCost": 0.76,
+        "latitude": 40.639722,
+        "longitude": -73.778889
+      }
+    ],
+    "createdAt": "2025-06-18T16:38:59.833Z",
+    "updatedAt": "2025-06-18T16:38:59.833Z"
+  }
+]

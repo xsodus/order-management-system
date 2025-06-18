@@ -1,9 +1,9 @@
 import Order, { OrderItem, OrderStatus } from '../models/order.model';
-import Product from '../models/product.model';
 import Warehouse from '../models/warehouse.model';
-import { Op, QueryTypes } from 'sequelize';
+import { QueryTypes } from 'sequelize';
 import Decimal from 'decimal.js';
 import { sequelize } from '../config/database';
+import logger from '../utils/logger';
 
 interface VerifyOrderDto {
   quantity: number;
@@ -72,6 +72,10 @@ export class OrderService {
     // This is much more efficient than fetching all warehouses and calculating distances in JavaScript
     const warehousesWithDistance = await this.getWarehousesByDistance(latitude, longitude);
 
+    logger.debug(
+      `Found ${warehousesWithDistance.length} warehouses with stock for allocation` +
+        JSON.stringify(warehousesWithDistance, null, 2),
+    );
     // Allocate products from warehouses
     const allocations: WarehouseAllocation[] = [];
     let remainingQuantity = quantity;
