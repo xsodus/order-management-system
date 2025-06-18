@@ -38,12 +38,11 @@ export const initDatabase = async (): Promise<void> => {
   try {
     await testConnection();
     await sequelize.sync({ force: config.env === 'test' });
+    logger.info('All models were synchronized successfully.');
 
     // Enable PostGIS extension
     await sequelize.query('CREATE EXTENSION IF NOT EXISTS postgis;');
     logger.info('PostGIS extension enabled');
-
-    logger.info('All models were synchronized successfully.');
   } catch (error) {
     logger.error('Database initialization failed:', error);
     throw error;

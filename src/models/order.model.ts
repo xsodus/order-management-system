@@ -59,6 +59,7 @@ OrderItem.init(
   {
     sequelize,
     tableName: 'order_items',
+    timestamps: true,
   },
 );
 
@@ -195,6 +196,7 @@ Order.init(
   {
     sequelize,
     tableName: 'orders',
+    timestamps: true,
   },
 );
 

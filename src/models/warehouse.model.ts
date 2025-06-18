@@ -9,8 +9,6 @@ export interface WarehouseAttributes {
   longitude: number;
   location?: any; // PostGIS GEOGRAPHY point
   stock: number;
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 export class Warehouse extends Model<WarehouseAttributes> implements WarehouseAttributes {
@@ -20,8 +18,6 @@ export class Warehouse extends Model<WarehouseAttributes> implements WarehouseAt
   public longitude!: number;
   public location?: any; // PostGIS GEOGRAPHY point
   public stock!: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
 
   // Method to update stock
   async updateStock(quantity: number): Promise<void> {
@@ -67,6 +63,7 @@ Warehouse.init(
   {
     sequelize,
     tableName: 'warehouses',
+    timestamps: false,
     hooks: {
       beforeCreate: (warehouse: Warehouse) => {
         // Automatically create location from latitude and longitude

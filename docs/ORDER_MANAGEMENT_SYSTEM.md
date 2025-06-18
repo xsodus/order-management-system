@@ -78,7 +78,6 @@ POST /orders
 ### Technical Requirements
 
 - [x] Implement in **TypeScript**
-- [x] Store data in a sqlite that works in-memory. And use sequelize as the main interface to connect the database.
 - [x] Create a database structure based on SCOS Device Information, Warehouses and Stock, API endpoints
 - [x] Expose a **well-documented API** with swagger API doc
 - [x] Create integration tests againts API with Jest that focusing only main requirements

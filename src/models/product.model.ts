@@ -8,8 +8,6 @@ export interface ProductAttributes {
   name: string;
   price: Decimal;
   weight: number;
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 export class Product extends Model<ProductAttributes> implements ProductAttributes {
@@ -17,8 +15,6 @@ export class Product extends Model<ProductAttributes> implements ProductAttribut
   public name!: string;
   public price!: Decimal;
   public weight!: number;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
 
   /**
    * Calculate discount based on quantity
@@ -78,6 +74,7 @@ Product.init(
   {
     sequelize,
     tableName: 'products',
+    timestamps: false,
   },
 );
 
