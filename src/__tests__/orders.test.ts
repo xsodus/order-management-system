@@ -120,12 +120,27 @@ describe('Order API Integration Tests', () => {
   // Test getting orders
   describe('GET /api/orders', () => {
     it('should get all orders', async () => {
+      // Create some test orders first
+      const testOrders = [
+        { ...sampleOrderData, quantity: 10 },
+        { ...sampleOrderData, quantity: 25 },
+        { ...sampleOrderData, quantity: 50 },
+      ];
+
+      // Create the orders
+      const createdOrders = [];
+      for (const orderData of testOrders) {
+        const createResponse = await testClient.post('/api/orders').send(orderData);
+        expect(createResponse.status).toBe(201);
+        createdOrders.push(createResponse.body);
+      }
+
       const response = await testClient.get('/api/orders');
 
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('orders');
       expect(response.body.orders).toBeInstanceOf(Array);
-      expect(response.body.orders.length).toBeGreaterThan(0);
+      expect(response.body.orders.length).toBeGreaterThanOrEqual(testOrders.length);
 
       // Validate that each order has basePrice
       response.body.orders.forEach((order: any) => {
@@ -135,6 +150,11 @@ describe('Order API Integration Tests', () => {
         const expectedBasePrice = order.quantity * 150;
         expect(order.basePrice).toBe(expectedBasePrice);
       });
+
+      // Clean up created orders
+      for (const order of createdOrders) {
+        await testClient.delete(`/api/orders/${order.id}`);
+      }
     });
 
     it('should filter orders by status', async () => {
@@ -184,7 +204,8 @@ describe('Order API Integration Tests', () => {
     });
 
     it('should return 404 if order does not exist', async () => {
-      const response = await testClient.get('/api/orders/non-existent-id');
+      // Use a valid UUID format that doesn't exist in the database
+      const response = await testClient.get('/api/orders/00000000-0000-0000-0000-000000000000');
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('status', 'error');
@@ -233,9 +254,12 @@ describe('Order API Integration Tests', () => {
     });
 
     it('should return 404 if order does not exist', async () => {
-      const response = await testClient.patch('/api/orders/non-existent-id/status').send({
-        status: OrderStatus.PROCESSING,
-      });
+      // Use a valid UUID format that doesn't exist in the database
+      const response = await testClient
+        .patch('/api/orders/00000000-0000-0000-0000-000000000000/status')
+        .send({
+          status: OrderStatus.PROCESSING,
+        });
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('status', 'error');
@@ -263,7 +287,8 @@ describe('Order API Integration Tests', () => {
     });
 
     it('should return 404 if order does not exist', async () => {
-      const response = await testClient.delete('/api/orders/non-existent-id');
+      // Use a valid UUID format that doesn't exist in the database
+      const response = await testClient.delete('/api/orders/00000000-0000-0000-0000-000000000000');
 
       expect(response.status).toBe(404);
       expect(response.body).toHaveProperty('status', 'error');
