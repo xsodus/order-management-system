@@ -56,6 +56,18 @@ const options: swaggerJsdoc.Options = {
               description: 'Shipping cost from this warehouse',
               example: 25.0,
             },
+            latitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Latitude of the warehouse',
+              example: 13.7563,
+            },
+            longitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Longitude of the warehouse',
+              example: 100.5018,
+            },
           },
         },
         OrderResponseDto: {

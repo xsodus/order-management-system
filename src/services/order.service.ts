@@ -39,41 +39,14 @@ interface WarehouseAllocation {
   quantity: number;
   distance: number;
   shippingCost: Decimal;
+  latitude: number;
+  longitude: number;
 }
 
 export class OrderService {
   private SHIPPING_RATE = new Decimal(0.01); // $0.01 per kg per km
   private DEVICE_WEIGHT_KG = new Decimal(0.365); // 365g in kg
   private DEVICE_PRICE = new Decimal(150); // $150
-
-  /**
-   * Calculate distance between two points using Haversine formula
-   * @param lat1 Latitude of point 1
-   * @param lon1 Longitude of point 1
-   * @param lat2 Latitude of point 2
-   * @param lon2 Longitude of point 2
-   * @returns Distance in kilometers
-   */
-  private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371; // Radius of the Earth in km
-    const dLat = this.deg2rad(lat2 - lat1);
-    const dLon = this.deg2rad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.deg2rad(lat1)) *
-        Math.cos(this.deg2rad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
-
-  /**
-   * Convert degrees to radians
-   */
-  private deg2rad(deg: number): number {
-    return deg * (Math.PI / 180);
-  }
 
   /**
    * Calculate discount based on quantity
@@ -120,6 +93,8 @@ export class OrderService {
           warehouseName: warehouseData.name,
           quantity: quantityFromWarehouse,
           distance: warehouseData.distance,
+          latitude: warehouseData.latitude,
+          longitude: warehouseData.longitude,
           shippingCost,
         });
 
@@ -294,6 +269,7 @@ export class OrderService {
           orderId: order.id,
           warehouseId: allocation.warehouseId,
           quantity: allocation.quantity,
+          shippingCost: allocation.shippingCost, // Store shippingCost per item
         });
 
         // Update warehouse inventory

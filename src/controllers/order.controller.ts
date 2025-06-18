@@ -99,6 +99,34 @@ export class OrderController {
     logger.info('Retrieving orders');
     try {
       const { orders, total } = await this.orderService.getOrders();
+      // Merge warehouse data into each order's items
+      const warehouseIds = Array.from(
+        new Set(
+          orders.flatMap((order: any) => (order.items || []).map((item: any) => item.warehouseId)),
+        ),
+      );
+      // Fetch all warehouses in one query
+      const warehouses = await (
+        await import('../models/warehouse.model')
+      ).default.findAll({
+        where: { id: warehouseIds },
+        raw: true,
+      });
+      const warehouseMap = new Map(warehouses.map((w: any) => [w.id, w]));
+      // Attach warehouse info to each item
+      for (const order of orders) {
+        if (order.items) {
+          for (const item of order.items) {
+            const warehouse = warehouseMap.get(item.warehouseId);
+            if (warehouse) {
+              item.warehouseName = warehouse.name;
+              item.latitude = warehouse.latitude;
+              item.longitude = warehouse.longitude;
+              item.stock = warehouse.stock;
+            }
+          }
+        }
+      }
       res.status(200).json(OrderMapper.toListResponseDto(orders, total));
     } catch (error: any) {
       logger.error('Failed to retrieve orders', {

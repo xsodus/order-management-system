@@ -15,6 +15,7 @@ export interface OrderItemAttributes {
   orderId: string;
   quantity: number;
   warehouseId: string;
+  shippingCost: Decimal; // Added shippingCost field
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -29,6 +30,7 @@ export class OrderItem
   public orderId!: string;
   public quantity!: number;
   public warehouseId!: string;
+  public shippingCost!: Decimal; // Added shippingCost property
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -53,6 +55,21 @@ OrderItem.init(
       allowNull: false,
       validate: {
         min: 1,
+      },
+    },
+    shippingCost: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      get() {
+        const value = (this as any).getDataValue('shippingCost');
+        return value === null ? null : new Decimal(value);
+      },
+      set(value: string | number | Decimal) {
+        if (Decimal.isDecimal(value)) {
+          (this as any).setDataValue('shippingCost', value.toString());
+        } else {
+          (this as any).setDataValue('shippingCost', value);
+        }
       },
     },
   },

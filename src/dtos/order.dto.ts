@@ -22,6 +22,8 @@ export interface WarehouseAllocationDto {
   quantity: number;
   distance: number;
   shippingCost: number; // Using number for API responses
+  latitude: number;
+  longitude: number;
 }
 
 // Response DTO for verification and creation
@@ -76,6 +78,8 @@ export class OrderMapper {
           quantity: item.quantity,
           distance: item.distance,
           shippingCost: roundTo4(itemShippingCost),
+          latitude: item.latitude,
+          longitude: item.longitude,
         };
       }),
       createdAt: order.createdAt?.toISOString(),
