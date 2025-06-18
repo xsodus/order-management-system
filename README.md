@@ -254,3 +254,11 @@ You can interactively explore and test the API using the built-in Swagger UI.
    [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
    This page displays the Swagger UI, which lists all available API endpoints, their parameters, request/response schemas, and example payloads.
+
+## Deployment & CI/CD
+
+This project uses GitHub Actions for automated deployment to Azure App Service.  
+ The workflow was set up by following [this Microsoft guide](https://learn.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=openid%2Caspnetcore).
+
+You can view the complete workflow configuration in the file:  
+ `./.github/workflows/main_akkapon-order-management.yml`
