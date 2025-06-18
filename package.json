@@ -20,8 +20,7 @@
     "db:up": "docker-compose up -d",
     "db:down": "docker-compose down",
     "db:reset": "docker-compose down -v && docker-compose up -d",
-    "db:logs": "docker-compose logs -f postgres",
-    "migrate": "npm run build && node dist/scripts/migrate.js"
+    "db:logs": "docker-compose logs -f postgres"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
