@@ -7,6 +7,7 @@ export interface WarehouseAttributes {
   name: string;
   latitude: number;
   longitude: number;
+  location?: any; // PostGIS GEOGRAPHY point
   stock: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -17,6 +18,7 @@ export class Warehouse extends Model<WarehouseAttributes> implements WarehouseAt
   public name!: string;
   public latitude!: number;
   public longitude!: number;
+  public location?: any; // PostGIS GEOGRAPHY point
   public stock!: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -50,6 +52,10 @@ Warehouse.init(
       type: DataTypes.FLOAT,
       allowNull: false,
     },
+    location: {
+      type: DataTypes.GEOGRAPHY('POINT', 4326),
+      allowNull: true,
+    },
     stock: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -61,6 +67,28 @@ Warehouse.init(
   {
     sequelize,
     tableName: 'warehouses',
+    hooks: {
+      beforeCreate: (warehouse: Warehouse) => {
+        // Automatically create location from latitude and longitude
+        if (warehouse.latitude && warehouse.longitude) {
+          warehouse.location = {
+            type: 'Point',
+            coordinates: [warehouse.longitude, warehouse.latitude],
+            crs: { type: 'name', properties: { name: 'EPSG:4326' } },
+          };
+        }
+      },
+      beforeUpdate: (warehouse: Warehouse) => {
+        // Update location if latitude or longitude changed
+        if (warehouse.changed('latitude') || warehouse.changed('longitude')) {
+          warehouse.location = {
+            type: 'Point',
+            coordinates: [warehouse.longitude, warehouse.latitude],
+            crs: { type: 'name', properties: { name: 'EPSG:4326' } },
+          };
+        }
+      },
+    },
   },
 );
 

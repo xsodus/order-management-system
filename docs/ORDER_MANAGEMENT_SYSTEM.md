@@ -109,3 +109,4 @@ POST /orders
   - Update Docker Compose configuration for PostgreSQL
   - Implement proper database initialization scripts
   - Remove unused node libraries
+- [ ] Update data warehouse by merging lat, long into GEOGRAPHY then query data by using ST_Distance function from PostGIS extension

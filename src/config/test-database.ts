@@ -12,9 +12,9 @@ export class TestDatabase {
     }
 
     try {
-      logger.info('Starting PostgreSQL test container...');
+      logger.info('Starting PostgreSQL with PostGIS test container...');
 
-      this.container = await new GenericContainer('postgres:16')
+      this.container = await new GenericContainer('postgis/postgis:16-3.4')
         .withEnvironment({
           POSTGRES_DB: 'order_management_test',
           POSTGRES_USER: 'postgres',
@@ -60,6 +60,10 @@ export class TestDatabase {
         try {
           await this.sequelize.authenticate();
           logger.info('Test database connection established successfully');
+
+          // Enable PostGIS extension
+          await this.sequelize.query('CREATE EXTENSION IF NOT EXISTS postgis;');
+          logger.info('PostGIS extension enabled in test container');
           break;
         } catch (error) {
           retries--;

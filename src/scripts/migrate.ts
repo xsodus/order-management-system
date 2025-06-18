@@ -1,6 +1,7 @@
 import { initDatabase, closeConnection } from '../config/database';
 import { Warehouse } from '../models/warehouse.model';
 import { Product } from '../models/product.model';
+import { addPostGISGeography } from './add-postgis-geography';
 import Decimal from 'decimal.js';
 import logger from '../utils/logger';
 
@@ -71,6 +72,9 @@ async function migrate() {
     } else {
       logger.info('Warehouse data already exists, skipping...');
     }
+
+    // Run the PostGIS migration (add location column and populate it)
+    await addPostGISGeography();
 
     logger.info('Database migration completed successfully');
   } catch (error) {

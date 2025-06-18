@@ -139,8 +139,8 @@ export class OrderService {
   }
 
   /**
-   * Get warehouses ordered by distance using SQL-based calculation
-   * More efficient than fetching all warehouses and calculating distances in JavaScript
+   * Get warehouses ordered by distance using PostGIS spatial calculations
+   * Optimized for PostgreSQL with PostGIS extension
    */
   private async getWarehousesByDistance(
     targetLat: number,
@@ -155,8 +155,7 @@ export class OrderService {
       distance: number;
     }>
   > {
-    // Use SQL query with Haversine formula to calculate distances directly in the database
-    // This is much more efficient for large datasets
+    // Create a geography point from the target coordinates
     const query = `
       SELECT 
         id,
@@ -164,13 +163,23 @@ export class OrderService {
         latitude,
         longitude,
         stock,
-        (6371 * 2 * asin(sqrt(
-          pow(sin(radians(latitude - :targetLat) / 2), 2) +
-          cos(radians(:targetLat)) * cos(radians(latitude)) *
-          pow(sin(radians(longitude - :targetLng) / 2), 2)
-        ))) AS distance
+        -- Use ST_Distance with the geography type for accurate distance in meters
+        -- Divide by 1000 to convert to kilometers
+        ST_Distance(
+          location,
+          ST_SetSRID(ST_MakePoint(:targetLng, :targetLat), 4326)::geography
+        ) / 1000 AS distance,
+        -- Alternative that returns the same distance but optimized for indexed search
+        -- ST_DistanceSphere(
+        --   ST_MakePoint(longitude, latitude),
+        --   ST_MakePoint(:targetLng, :targetLat)
+        -- ) / 1000 AS distance
+        -- Add for optimization when using KNN searches
+        -- location <-> ST_SetSRID(ST_MakePoint(:targetLng, :targetLat), 4326)::geography AS knn_distance
       FROM warehouses
       WHERE stock > 0
+      -- Use distance-based index for better performance
+      -- If using KNN, could replace with: ORDER BY knn_distance
       ORDER BY distance ASC
     `;
 
