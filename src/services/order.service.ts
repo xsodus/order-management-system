@@ -23,6 +23,7 @@ interface OrderResult {
   quantity: number;
   latitude: number;
   longitude: number;
+  basePrice: Decimal;
   totalPrice: Decimal;
   discount: Decimal;
   shippingCost: Decimal;
@@ -153,7 +154,7 @@ export class OrderService {
   private calculateOrderCosts(
     quantity: number,
     allocations: WarehouseAllocation[],
-  ): { totalPrice: Decimal; discount: Decimal; shippingCost: Decimal } {
+  ): { basePrice: Decimal; totalPrice: Decimal; discount: Decimal; shippingCost: Decimal } {
     // Calculate base price
     const basePrice = this.DEVICE_PRICE.mul(new Decimal(quantity));
 
@@ -171,6 +172,7 @@ export class OrderService {
     const totalPrice = basePrice.minus(discount);
 
     return {
+      basePrice,
       totalPrice,
       discount,
       shippingCost,
@@ -198,7 +200,7 @@ export class OrderService {
       const allocations = await this.findOptimalWarehouses(quantity, latitude, longitude);
 
       // Calculate costs
-      const { totalPrice, discount, shippingCost } = this.calculateOrderCosts(
+      const { basePrice, totalPrice, discount, shippingCost } = this.calculateOrderCosts(
         quantity,
         allocations,
       );
@@ -210,6 +212,7 @@ export class OrderService {
         quantity,
         latitude,
         longitude,
+        basePrice,
         totalPrice,
         discount,
         shippingCost,
@@ -266,6 +269,7 @@ export class OrderService {
         quantity: order.quantity,
         latitude: order.latitude,
         longitude: order.longitude,
+        basePrice: verification.basePrice,
         totalPrice:
           order.totalPrice instanceof Decimal ? order.totalPrice : new Decimal(order.totalPrice),
         discount: order.discount instanceof Decimal ? order.discount : new Decimal(order.discount),

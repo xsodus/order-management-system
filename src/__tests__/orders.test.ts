@@ -16,9 +16,14 @@ describe('Order API Integration Tests', () => {
       });
 
       expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('basePrice');
       expect(response.body).toHaveProperty('totalPrice');
       expect(response.body).toHaveProperty('discount');
       expect(response.body).toHaveProperty('shippingCost');
+
+      // Validate basePrice calculation (quantity * $150)
+      const expectedBasePrice = sampleOrderData.quantity * 150;
+      expect(response.body.basePrice).toBe(expectedBasePrice);
     });
 
     it('should return 400 if required parameters are missing', async () => {
@@ -41,7 +46,12 @@ describe('Order API Integration Tests', () => {
       expect(response.body).toHaveProperty('id');
       expect(response.body).toHaveProperty('orderNumber');
       expect(response.body).toHaveProperty('status', OrderStatus.PENDING);
+      expect(response.body).toHaveProperty('basePrice');
       expect(response.body).toHaveProperty('totalPrice');
+
+      // Validate basePrice calculation (quantity * $150)
+      const expectedBasePrice = sampleOrderData.quantity * 150;
+      expect(response.body.basePrice).toBe(expectedBasePrice);
 
       // Save the order id for later tests
       orderId = response.body.id;
@@ -66,6 +76,29 @@ describe('Order API Integration Tests', () => {
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('status', 'error');
     });
+
+    it('should calculate basePrice correctly for different quantities', async () => {
+      const testQuantities = [1, 25, 50, 100];
+
+      for (const quantity of testQuantities) {
+        const response = await testClient.post('/api/orders').send({
+          ...sampleOrderData,
+          quantity,
+        });
+
+        expect(response.status).toBe(201);
+        expect(response.body).toHaveProperty('basePrice');
+
+        // Validate basePrice calculation (quantity * $150)
+        const expectedBasePrice = quantity * 150;
+        expect(response.body.basePrice).toBe(expectedBasePrice);
+
+        // Clean up created order
+        if (response.body.id) {
+          await testClient.delete(`/api/orders/${response.body.id}`);
+        }
+      }
+    });
   });
 
   // Test getting orders
@@ -77,6 +110,15 @@ describe('Order API Integration Tests', () => {
       expect(response.body).toHaveProperty('orders');
       expect(response.body.orders).toBeInstanceOf(Array);
       expect(response.body.orders.length).toBeGreaterThan(0);
+
+      // Validate that each order has basePrice
+      response.body.orders.forEach((order: any) => {
+        expect(order).toHaveProperty('basePrice');
+        expect(order).toHaveProperty('quantity');
+        // Validate basePrice calculation (quantity * $150)
+        const expectedBasePrice = order.quantity * 150;
+        expect(order.basePrice).toBe(expectedBasePrice);
+      });
     });
 
     it('should filter orders by status', async () => {
@@ -91,6 +133,15 @@ describe('Order API Integration Tests', () => {
       expect(response.body.orders.every((order: any) => order.status === OrderStatus.PENDING)).toBe(
         true,
       );
+
+      // Validate that each order has basePrice
+      response.body.orders.forEach((order: any) => {
+        expect(order).toHaveProperty('basePrice');
+        expect(order).toHaveProperty('quantity');
+        // Validate basePrice calculation (quantity * $150)
+        const expectedBasePrice = order.quantity * 150;
+        expect(order.basePrice).toBe(expectedBasePrice);
+      });
     });
   });
 
@@ -108,6 +159,12 @@ describe('Order API Integration Tests', () => {
       expect(response.body).toHaveProperty('id', orderId);
       expect(response.body).toHaveProperty('orderNumber');
       expect(response.body).toHaveProperty('status');
+      expect(response.body).toHaveProperty('basePrice');
+      expect(response.body).toHaveProperty('quantity');
+
+      // Validate basePrice calculation (quantity * $150)
+      const expectedBasePrice = response.body.quantity * 150;
+      expect(response.body.basePrice).toBe(expectedBasePrice);
     });
 
     it('should return 404 if order does not exist', async () => {
@@ -133,6 +190,12 @@ describe('Order API Integration Tests', () => {
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('id', orderId);
       expect(response.body).toHaveProperty('status', OrderStatus.PROCESSING);
+      expect(response.body).toHaveProperty('basePrice');
+      expect(response.body).toHaveProperty('quantity');
+
+      // Validate basePrice calculation (quantity * $150)
+      const expectedBasePrice = response.body.quantity * 150;
+      expect(response.body.basePrice).toBe(expectedBasePrice);
     });
 
     it('should return 400 if status is invalid', async () => {

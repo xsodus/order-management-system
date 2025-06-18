@@ -88,17 +88,23 @@ const options: swaggerJsdoc.Options = {
               description: 'Longitude of the shipping address',
               example: -74.005974,
             },
+            basePrice: {
+              type: 'number',
+              format: 'double',
+              description: 'Base price before discount (quantity × unit price)',
+              example: 1500.0,
+            },
             totalPrice: {
               type: 'number',
               format: 'double',
-              description: 'Total price of the order including shipping',
-              example: 259.98,
+              description: 'Total price of the order after discount (not including shipping)',
+              example: 1350.0,
             },
             discount: {
               type: 'number',
               format: 'double',
               description: 'Discount amount applied to the order',
-              example: 25.0,
+              example: 150.0,
             },
             shippingCost: {
               type: 'number',

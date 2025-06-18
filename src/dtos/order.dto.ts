@@ -36,6 +36,7 @@ export interface OrderResponseDto {
   quantity: number;
   latitude: number;
   longitude: number;
+  basePrice: number; // Using number for API responses
   totalPrice: number; // Using number for API responses
   discount: number; // Using number for API responses
   shippingCost: number; // Using number for API responses
@@ -64,6 +65,9 @@ export interface OrderFilterDto {
 
 export class OrderMapper {
   static toResponseDto(order: any): OrderResponseDto {
+    // Calculate basePrice if not available (for backward compatibility with existing orders)
+    const basePrice = order.basePrice || order.quantity * 150; // 150 is the device price
+
     return {
       id: order.id,
       orderNumber: order.orderNumber,
@@ -71,6 +75,7 @@ export class OrderMapper {
       latitude: order.latitude,
       longitude: order.longitude,
       // Convert Decimal objects to numbers for API response
+      basePrice: basePrice instanceof Decimal ? basePrice.toNumber() : Number(basePrice),
       totalPrice:
         order.totalPrice instanceof Decimal
           ? order.totalPrice.toNumber()
