@@ -1,6 +1,7 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../config/database';
 import Decimal from 'decimal.js';
+import logger from '../utils/logger';
 
 export interface ProductAttributes {
   id?: string;
@@ -87,7 +88,7 @@ export const seedProducts = async (): Promise<void> => {
     price: new Decimal(150), // $150
     weight: 0.365, // 365g converted to kg
   });
-  console.log('Products seeded successfully');
+  logger.info('Products seeded successfully');
 };
 
 export default Product;

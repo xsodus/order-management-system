@@ -1,5 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../config/database';
+import logger from '../utils/logger';
 
 export interface WarehouseAttributes {
   id?: string;
@@ -75,7 +76,7 @@ export const seedWarehouses = async (): Promise<void> => {
   ];
 
   await Warehouse.bulkCreate(warehouses);
-  console.log('Warehouses seeded successfully');
+  logger.info('Warehouses seeded successfully');
 };
 
 export default Warehouse;
