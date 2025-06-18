@@ -235,3 +235,22 @@ The application is designed with scalability in mind:
 1. **Modular Architecture**: The MVCS pattern enables easy addition of new features
 2. **Separated Business Logic**: Service layer allows for easy swapping of data sources (e.g., from in-memory to database)
 3. **DTOs**: Ensures proper data validation and transformation
+
+## API Documentation & Testing with Swagger
+
+You can interactively explore and test the API using the built-in Swagger UI.
+
+### Accessing Swagger UI
+
+1. **Start the API server** (in development mode):
+
+   ```bash
+   yarn dev
+   ```
+
+   By default, the server runs on [http://localhost:3000](http://localhost:3000).
+
+2. **Open your browser and go to:**
+   [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+
+   This page displays the Swagger UI, which lists all available API endpoints, their parameters, request/response schemas, and example payloads.
