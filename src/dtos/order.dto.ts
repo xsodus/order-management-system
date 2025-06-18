@@ -39,7 +39,6 @@ export interface OrderResponseDto {
   totalPrice: number; // Using number for API responses
   discount: number; // Using number for API responses
   shippingCost: number; // Using number for API responses
-  isValid: boolean;
   status?: OrderStatus;
   items?: WarehouseAllocationDto[];
   createdAt?: string;
@@ -82,7 +81,6 @@ export class OrderMapper {
         order.shippingCost instanceof Decimal
           ? order.shippingCost.toNumber()
           : Number(order.shippingCost),
-      isValid: order.isValid !== undefined ? order.isValid : true,
       status: order.status,
       items: order.items?.map((item: any) => ({
         ...item,

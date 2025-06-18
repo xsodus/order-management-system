@@ -26,7 +26,6 @@ interface OrderResult {
   totalPrice: Decimal;
   discount: Decimal;
   shippingCost: Decimal;
-  isValid: boolean;
   status?: OrderStatus;
   items?: any[];
   createdAt?: Date;
@@ -179,12 +178,15 @@ export class OrderService {
   }
 
   /**
-   * Verify if an order is valid
+   * Check if shipping cost exceeds limit
    */
-  private isOrderValid(totalPrice: Decimal, shippingCost: Decimal): boolean {
+  private validateShippingCost(totalPrice: Decimal, shippingCost: Decimal): void {
     // Order is invalid if shipping cost exceeds 15% of order amount after discount
-    return shippingCost.lte(totalPrice.mul(new Decimal(0.15)));
+    if (shippingCost.gt(totalPrice.mul(new Decimal(0.15)))) {
+      throw new Error('Order is invalid: shipping cost exceeds 15% of order amount');
+    }
   }
+
   /**
    * Verify a potential order without submitting
    */
@@ -201,8 +203,8 @@ export class OrderService {
         allocations,
       );
 
-      // Check if order is valid
-      const isValid = this.isOrderValid(totalPrice, shippingCost);
+      // Validate shipping cost - will throw error if invalid
+      this.validateShippingCost(totalPrice, shippingCost);
 
       return {
         quantity,
@@ -211,7 +213,6 @@ export class OrderService {
         totalPrice,
         discount,
         shippingCost,
-        isValid,
         items: allocations,
       };
     } catch (error: any) {
@@ -226,13 +227,8 @@ export class OrderService {
     try {
       const { quantity, latitude, longitude } = orderData;
 
-      // First verify the order
+      // First verify the order - this will throw an error if invalid
       const verification = await this.verifyOrder(orderData);
-
-      // If order is not valid, reject it
-      if (!verification.isValid) {
-        throw new Error('Order is invalid: shipping cost exceeds 15% of order amount');
-      }
 
       // Create order in database
       const order = await Order.create({
@@ -242,7 +238,6 @@ export class OrderService {
         totalPrice: verification.totalPrice,
         discount: verification.discount,
         shippingCost: verification.shippingCost,
-        isValid: true,
         status: OrderStatus.PENDING,
       });
 
@@ -278,7 +273,6 @@ export class OrderService {
           order.shippingCost instanceof Decimal
             ? order.shippingCost
             : new Decimal(order.shippingCost),
-        isValid: order.isValid,
         status: order.status,
         items: allocations,
         createdAt: order.createdAt,

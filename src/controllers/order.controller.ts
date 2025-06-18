@@ -48,7 +48,6 @@ export class OrderController {
       });
 
       logger.info('Order verified successfully', {
-        isValid: result.isValid,
         totalPrice: result.totalPrice,
       });
       res.status(200).json(OrderMapper.toResponseDto(result));

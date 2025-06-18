@@ -106,11 +106,7 @@ const options: swaggerJsdoc.Options = {
               description: 'Total shipping cost for the order',
               example: 15.0,
             },
-            isValid: {
-              type: 'boolean',
-              description: 'Indicates if the order can be fulfilled',
-              example: true,
-            },
+
             status: {
               $ref: '#/components/schemas/OrderStatus',
             },

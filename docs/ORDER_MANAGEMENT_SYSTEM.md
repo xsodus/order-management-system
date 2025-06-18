@@ -88,3 +88,4 @@ POST /orders
 - [ ] Deploying the app to a cloud provider and showing a **CI/CD pipeline** is a plus
 - [x] Implement logging with timestamps with winston library for request tracking and debugging
 - [x] Use decimal data type of decimal.js for financial number and calculation.
+- [ ] Refactor to remove `isValid` and transform to 400 HTTP status instead if the order request is not valid.

@@ -75,7 +75,6 @@ export interface OrderAttributes {
   totalPrice: DecimalColumn; // Using Decimal.js for financial calculations
   discount: DecimalColumn;
   shippingCost: DecimalColumn;
-  isValid: boolean;
   status: OrderStatus;
   createdAt?: Date;
   updatedAt?: Date;
@@ -84,7 +83,7 @@ export interface OrderAttributes {
 export interface OrderCreationAttributes
   extends Optional<
     OrderAttributes,
-    'id' | 'orderNumber' | 'totalPrice' | 'discount' | 'shippingCost' | 'isValid' | 'status'
+    'id' | 'orderNumber' | 'totalPrice' | 'discount' | 'shippingCost' | 'status'
   > {}
 
 export class Order
@@ -99,7 +98,6 @@ export class Order
   public totalPrice!: Decimal;
   public discount!: Decimal;
   public shippingCost!: Decimal;
-  public isValid!: boolean;
   public status!: OrderStatus;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -187,11 +185,6 @@ Order.init(
         // Use type assertion to handle the mismatch
         this.setDataValue('shippingCost', stringValue as any);
       },
-    },
-    isValid: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: true,
     },
     status: {
       type: DataTypes.ENUM(...Object.values(OrderStatus)),
