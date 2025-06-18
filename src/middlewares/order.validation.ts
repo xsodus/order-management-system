@@ -32,14 +32,28 @@ export const validateVerifyOrder = validate([
   query('latitude')
     .notEmpty()
     .withMessage('Latitude is required')
-    .isFloat({ min: -90, max: 90 })
-    .withMessage('Latitude must be a number between -90 and 90'),
+    .isNumeric()
+    .withMessage('Latitude must be a number')
+    .custom(value => {
+      const num = parseFloat(value);
+      if (num < -90 || num > 90) {
+        throw new Error('Latitude must be between -90 and 90');
+      }
+      return true;
+    }),
 
   query('longitude')
     .notEmpty()
     .withMessage('Longitude is required')
-    .isFloat({ min: -180, max: 180 })
-    .withMessage('Longitude must be a number between -180 and 180'),
+    .isNumeric()
+    .withMessage('Longitude must be a number')
+    .custom(value => {
+      const num = parseFloat(value);
+      if (num < -180 || num > 180) {
+        throw new Error('Longitude must be between -180 and 180');
+      }
+      return true;
+    }),
 ]);
 
 // Validation for create order endpoint
@@ -53,14 +67,28 @@ export const validateCreateOrder = validate([
   body('latitude')
     .notEmpty()
     .withMessage('Latitude is required')
-    .isFloat({ min: -90, max: 90 })
-    .withMessage('Latitude must be a number between -90 and 90'),
+    .isNumeric()
+    .withMessage('Latitude must be a number')
+    .custom(value => {
+      const num = parseFloat(value);
+      if (num < -90 || num > 90) {
+        throw new Error('Latitude must be between -90 and 90');
+      }
+      return true;
+    }),
 
   body('longitude')
     .notEmpty()
     .withMessage('Longitude is required')
-    .isFloat({ min: -180, max: 180 })
-    .withMessage('Longitude must be a number between -180 and 180'),
+    .isNumeric()
+    .withMessage('Longitude must be a number')
+    .custom(value => {
+      const num = parseFloat(value);
+      if (num < -180 || num > 180) {
+        throw new Error('Longitude must be between -180 and 180');
+      }
+      return true;
+    }),
 ]);
 
 export const validateUpdateOrderStatus = validate([
@@ -117,3 +145,21 @@ export const validateOrderFilters = validate([
     .isInt({ min: 1, max: 100 })
     .withMessage('Limit must be between 1 and 100'),
 ]);
+
+// Utility function for manual validation as fallback
+export const validateCoordinates = (latitude: number, longitude: number): string | null => {
+  if (isNaN(latitude) || latitude < -90 || latitude > 90) {
+    return 'Latitude must be a number between -90 and 90';
+  }
+  if (isNaN(longitude) || longitude < -180 || longitude > 180) {
+    return 'Longitude must be a number between -180 and 180';
+  }
+  return null;
+};
+
+export const validateQuantity = (quantity: number): string | null => {
+  if (isNaN(quantity) || quantity < 1) {
+    return 'Quantity must be a positive integer';
+  }
+  return null;
+};

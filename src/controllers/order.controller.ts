@@ -3,15 +3,14 @@ import { OrderService } from '../services/order.service';
 import { OrderMapper } from '../dtos/order.dto';
 import { OrderStatus } from '../models/order.model';
 import { getRequestLogger } from '../utils/logger/get-request-logger';
+import { validateCoordinates, validateQuantity } from '../middlewares/order.validation';
 
 export class OrderController {
   private orderService: OrderService;
 
   constructor() {
     this.orderService = new OrderService();
-  }
-
-  /**
+  } /**
    * Verify an order without submitting
    */
   async verifyOrder(req: Request, res: Response): Promise<void> {
@@ -21,38 +20,16 @@ export class OrderController {
     try {
       const { quantity, latitude, longitude } = req.query;
 
-      if (!quantity || !latitude || !longitude) {
-        logger.warn('Missing required parameters for order verification', {
-          quantity: quantity || 'missing',
-          latitude: latitude || 'missing',
-          longitude: longitude || 'missing',
-        });
-
-        res.status(400).json({
-          status: 'error',
-          message: 'Quantity, latitude and longitude are required',
-        });
+      // Fallback validation in case middleware doesn't catch it
+      const quantityError = validateQuantity(Number(quantity));
+      if (quantityError) {
+        res.status(400).json({ status: 'error', message: quantityError });
         return;
       }
 
-      // Validate latitude and longitude ranges
-      const lat = Number(latitude);
-      if (isNaN(lat) || lat < -90 || lat > 90) {
-        logger.warn('Invalid latitude value', { latitude });
-        res.status(400).json({
-          status: 'error',
-          message: 'Latitude must be a number between -90 and 90',
-        });
-        return;
-      }
-
-      const lng = Number(longitude);
-      if (isNaN(lng) || lng < -180 || lng > 180) {
-        logger.warn('Invalid longitude value', { longitude });
-        res.status(400).json({
-          status: 'error',
-          message: 'Longitude must be a number between -180 and 180',
-        });
+      const coordinatesError = validateCoordinates(Number(latitude), Number(longitude));
+      if (coordinatesError) {
+        res.status(400).json({ status: 'error', message: coordinatesError });
         return;
       }
 
@@ -83,9 +60,7 @@ export class OrderController {
         message: error.message || 'Failed to verify order',
       });
     }
-  }
-
-  /**
+  } /**
    * Create a new order
    */
   async createOrder(req: Request, res: Response): Promise<void> {
@@ -95,36 +70,16 @@ export class OrderController {
     try {
       const { quantity, latitude, longitude } = req.body;
 
-      if (!quantity || !latitude || !longitude) {
-        logger.warn('Missing required parameters for order creation', {
-          quantity: quantity || 'missing',
-          latitude: latitude || 'missing',
-          longitude: longitude || 'missing',
-        });
-
-        res.status(400).json({
-          status: 'error',
-          message: 'Quantity, latitude and longitude are required',
-        });
+      // Fallback validation in case middleware doesn't catch it
+      const quantityError = validateQuantity(Number(quantity));
+      if (quantityError) {
+        res.status(400).json({ status: 'error', message: quantityError });
         return;
       }
 
-      // Validate latitude and longitude ranges
-      if (latitude < -90 || latitude > 90) {
-        logger.warn('Invalid latitude value', { latitude });
-        res.status(400).json({
-          status: 'error',
-          message: 'Latitude must be a number between -90 and 90',
-        });
-        return;
-      }
-
-      if (longitude < -180 || longitude > 180) {
-        logger.warn('Invalid longitude value', { longitude });
-        res.status(400).json({
-          status: 'error',
-          message: 'Longitude must be a number between -180 and 180',
-        });
+      const coordinatesError = validateCoordinates(Number(latitude), Number(longitude));
+      if (coordinatesError) {
+        res.status(400).json({ status: 'error', message: coordinatesError });
         return;
       }
 
