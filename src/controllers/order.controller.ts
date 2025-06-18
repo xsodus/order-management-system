@@ -35,6 +35,27 @@ export class OrderController {
         return;
       }
 
+      // Validate latitude and longitude ranges
+      const lat = Number(latitude);
+      if (isNaN(lat) || lat < -90 || lat > 90) {
+        logger.warn('Invalid latitude value', { latitude });
+        res.status(400).json({
+          status: 'error',
+          message: 'Latitude must be a number between -90 and 90',
+        });
+        return;
+      }
+
+      const lng = Number(longitude);
+      if (isNaN(lng) || lng < -180 || lng > 180) {
+        logger.warn('Invalid longitude value', { longitude });
+        res.status(400).json({
+          status: 'error',
+          message: 'Longitude must be a number between -180 and 180',
+        });
+        return;
+      }
+
       logger.debug('Calling order service to verify order', {
         quantity: Number(quantity),
         latitude: Number(latitude),
@@ -84,6 +105,25 @@ export class OrderController {
         res.status(400).json({
           status: 'error',
           message: 'Quantity, latitude and longitude are required',
+        });
+        return;
+      }
+
+      // Validate latitude and longitude ranges
+      if (latitude < -90 || latitude > 90) {
+        logger.warn('Invalid latitude value', { latitude });
+        res.status(400).json({
+          status: 'error',
+          message: 'Latitude must be a number between -90 and 90',
+        });
+        return;
+      }
+
+      if (longitude < -180 || longitude > 180) {
+        logger.warn('Invalid longitude value', { longitude });
+        res.status(400).json({
+          status: 'error',
+          message: 'Longitude must be a number between -180 and 180',
         });
         return;
       }

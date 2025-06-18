@@ -101,12 +101,10 @@ describe('Order Pricing and Discount Integration Tests', () => {
 
       const totalPrice = response.body.totalPrice;
       const discount = response.body.discount;
-      const shippingCost = response.body.shippingCost;
 
       // Convert values to Decimal for precise calculation
       const totalPriceDecimal = new Decimal(totalPrice);
       const discountDecimal = new Decimal(discount);
-      const shippingCostDecimal = new Decimal(shippingCost);
 
       // Calculate expected base price
       const basePrice = new Decimal(productPrice).times(quantity); // 150 * 50 = 7500

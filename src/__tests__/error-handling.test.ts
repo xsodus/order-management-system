@@ -30,12 +30,8 @@ describe('API Error Handling Tests', () => {
         longitude: -122.4194,
       });
 
-      // The API currently accepts out-of-range latitude values, so we'll accept 201 status for now
-      // In a real scenario, this should be fixed in the API validation
-      expect([201, 400]).toContain(response.status);
-      if (response.status === 400) {
-        expect(response.body).toHaveProperty('status', 'error');
-      }
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('status', 'error');
     });
 
     it('should validate longitude range', async () => {
@@ -45,12 +41,8 @@ describe('API Error Handling Tests', () => {
         longitude: -200, // Invalid longitude (below -180)
       });
 
-      // The API currently accepts out-of-range longitude values, so we'll accept 201 status for now
-      // In a real scenario, this should be fixed in the API validation
-      expect([201, 400]).toContain(response.status);
-      if (response.status === 400) {
-        expect(response.body).toHaveProperty('status', 'error');
-      }
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('status', 'error');
     });
 
     it('should validate that quantity is positive', async () => {

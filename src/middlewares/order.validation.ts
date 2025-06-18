@@ -5,10 +5,8 @@ import { OrderStatus } from '../models/order.model';
 // Middleware to validate request
 const validate = (validations: ValidationChain[]) => {
   return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    for (let validation of validations) {
-      const result = await validation.run(req);
-      if (result.context.errors.length) break;
-    }
+    // Run all validations in parallel
+    await Promise.all(validations.map(validation => validation.run(req)));
 
     const errors = validationResult(req);
     if (errors.isEmpty()) {
