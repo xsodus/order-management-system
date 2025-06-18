@@ -92,12 +92,72 @@ Warehouse.init(
 // Function to seed warehouses
 export const seedWarehouses = async (): Promise<void> => {
   const warehouses = [
-    { name: 'Los Angeles', latitude: 33.9425, longitude: -118.408056, stock: 355 },
-    { name: 'New York', latitude: 40.639722, longitude: -73.778889, stock: 578 },
-    { name: 'São Paulo', latitude: -23.435556, longitude: -46.473056, stock: 265 },
-    { name: 'Paris', latitude: 49.009722, longitude: 2.547778, stock: 694 },
-    { name: 'Warsaw', latitude: 52.165833, longitude: 20.967222, stock: 245 },
-    { name: 'Hong Kong', latitude: 22.308889, longitude: 113.914444, stock: 419 },
+    {
+      name: 'Los Angeles',
+      latitude: 33.9425,
+      longitude: -118.408056,
+      location: {
+        type: 'Point',
+        coordinates: [-118.408056, 33.9425],
+        crs: { type: 'name', properties: { name: 'EPSG:4326' } },
+      },
+      stock: 355,
+    },
+    {
+      name: 'New York',
+      latitude: 40.639722,
+      longitude: -73.778889,
+      location: {
+        type: 'Point',
+        coordinates: [-73.778889, 40.639722],
+        crs: { type: 'name', properties: { name: 'EPSG:4326' } },
+      },
+      stock: 578,
+    },
+    {
+      name: 'São Paulo',
+      latitude: -23.435556,
+      longitude: -46.473056,
+      location: {
+        type: 'Point',
+        coordinates: [-46.473056, -23.435556],
+        crs: { type: 'name', properties: { name: 'EPSG:4326' } },
+      },
+      stock: 265,
+    },
+    {
+      name: 'Paris',
+      latitude: 49.009722,
+      longitude: 2.547778,
+      location: {
+        type: 'Point',
+        coordinates: [2.547778, 49.009722],
+        crs: { type: 'name', properties: { name: 'EPSG:4326' } },
+      },
+      stock: 694,
+    },
+    {
+      name: 'Warsaw',
+      latitude: 52.165833,
+      longitude: 20.967222,
+      location: {
+        type: 'Point',
+        coordinates: [20.967222, 52.165833],
+        crs: { type: 'name', properties: { name: 'EPSG:4326' } },
+      },
+      stock: 245,
+    },
+    {
+      name: 'Hong Kong',
+      latitude: 22.308889,
+      longitude: 113.914444,
+      location: {
+        type: 'Point',
+        coordinates: [113.914444, 22.308889],
+        crs: { type: 'name', properties: { name: 'EPSG:4326' } },
+      },
+      stock: 419,
+    },
   ];
 
   await Warehouse.bulkCreate(warehouses);
