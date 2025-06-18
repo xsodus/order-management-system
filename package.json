@@ -8,8 +8,7 @@
   "scripts": {
     "dev": "NODE_ENV=development nodemon src/server.ts",
     "build": "tsc",
-    "start": "NODE_ENV=production node dist/server.js",
-    "prod": "NODE_ENV=production node dist/server.js",
+    "start": "node dist/server.js",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",

@@ -150,13 +150,6 @@ DB_PASSWORD=order-management
 yarn dev
 ```
 
-#### Production mode:
-
-```bash
-yarn build
-yarn prod
-```
-
 ## Financial Calculations
 
 This application uses [Decimal.js](https://mikemcl.github.io/decimal.js/) for all financial operations to ensure precise decimal arithmetic for monetary values and avoid floating-point rounding errors.
@@ -262,7 +255,14 @@ This project uses GitHub Actions for automated deployment to Azure App Service.
 
 You can view the complete workflow configuration in the file:  
  `./.github/workflows/main_akkapon-order-management.yml`
+This workflow is triggered automatically whenever you push code to the `main` branch.
 
-This workflow is automatically triggered whenever you push code to the `main` branch.
-Before pushing, ensure that your `.env.production` file is properly configured.  
-Alternatively, for improved security, you can modify the workflow to generate this file using GitHub secrets instead of committing sensitive information to the repository.
+**Before pushing code**, make sure that the environment variable names in your `.env.development` file match those configured in your Azure App Service.
+
+To verify or update your App Service environment variables:
+
+1. Go to your App Service in the Azure Portal.
+2. Navigate to **Settings** → **Configuration**.
+3. Add or update each environment variable (key/value pair) as you would for your production environment.
+
+This ensures your application runs correctly after deployment.
