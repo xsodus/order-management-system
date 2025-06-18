@@ -7,17 +7,39 @@ A RESTful API for managing orders, built with Node.js, Express, and TypeScript f
 This project follows the MVCS (Model-View-Controller-Service) architecture:
 
 - **Models**: Core business entities and data structures
-- **Views**: Not applicable for this API (would be client-side in a full-stack app)
 - **Controllers**: Handle HTTP requests and responses
 - **Services**: Implement business logic and operations
-
-Additionally, it includes:
-
 - **DTOs (Data Transfer Objects)**: For input validation and output formatting
 - **Middlewares**: For request validation, error handling, etc.
 - **Routes**: To define API endpoints
-- **Config**: For application configuration
+- **Config**: For application configuration (including database, environment, and swagger)
 - **Logging**: Winston-based logging system with request tracking
+
+## Project Structure
+
+```
+order-management-system/
+├── data/                  # Database data (PostgreSQL volume)
+├── docs/                  # Documentation
+├── logs/                  # Winston log output
+├── src/
+│   ├── __tests__/         # Integration and unit tests
+│   ├── config/            # App, DB, and Swagger config
+│   ├── controllers/       # Request handlers
+│   ├── dtos/              # Data Transfer Objects
+│   ├── middlewares/       # Express middlewares
+│   ├── models/            # Data models and entities
+│   ├── routes/            # API routes
+│   ├── services/          # Business logic
+│   ├── utils/             # Utility functions (logger, etc.)
+│   ├── app.ts             # Express app setup
+│   └── server.ts          # Server entry point
+├── .env*                  # Environment variable files
+├── docker-compose.yml     # Docker Compose for Postgres
+├── package.json           # Project manifest
+├── tsconfig.json          # TypeScript config
+└── README.md
+```
 
 ## API Endpoints
 
@@ -28,6 +50,12 @@ Additionally, it includes:
 - **POST /api/orders** - Create a new order
 - **PATCH /api/orders/:id/status** - Update order status
 - **DELETE /api/orders/:id** - Delete an order
+
+### Order Items
+
+- **POST /api/orders/:id/items** - Add item to an order
+- **PATCH /api/orders/:id/items/:itemId** - Update an order item
+- **DELETE /api/orders/:id/items/:itemId** - Remove an item from an order
 
 ## Logging System
 
@@ -54,11 +82,27 @@ logger.warn('Something unusual happened', { details: details });
 logger.error('Operation failed', { error: error.message });
 ```
 
-### Order Items
+## Database & Docker
 
-- **POST /api/orders/:id/items** - Add item to an order
-- **PATCH /api/orders/:id/items/:itemId** - Update an order item
-- **DELETE /api/orders/:id/items/:itemId** - Remove an item from an order
+- Uses PostgreSQL (with PostGIS) via Docker Compose for local development.
+- Database config is managed via environment variables and `src/config/`.
+- To start the database:
+
+```bash
+yarn db:up
+```
+
+- To stop the database:
+
+```bash
+yarn db:down
+```
+
+- To reset the database:
+
+```bash
+yarn db:reset
+```
 
 ## Getting Started
 
@@ -66,6 +110,7 @@ logger.error('Operation failed', { error: error.message });
 
 - Node.js (v20 or higher)
 - Yarn or npm
+- Docker (for local Postgres)
 
 ### Installation
 
@@ -84,97 +129,17 @@ yarn install
 npm install
 ```
 
-3. Start the development server:
-
-```bash
-yarn dev
-# or
-npm run dev
-```
-
-The server will start at http://localhost:3000.
-
-### Running Tests
-
-Run the integration tests:
-
-```bash
-yarn test
-```
-
-Run tests with coverage:
-
-```bash
-yarn test:coverage
-```
-
-For more details on the integration tests, see [Integration Tests Documentation](docs/INTEGRATION_TESTS.md).
-
-### API Documentation
-
-The API documentation is available via Swagger UI at:
-
-```
-http://localhost:3000/api-docs
-```
-
-This provides interactive documentation where you can explore and test all available endpoints.
-
-## Project Structure
-
-```
-src/
-├── config/             # Application configuration
-│   ├── index.ts        # Main config file
-│   └── swagger.config.ts # Swagger documentation config
-├── controllers/        # Request handlers
-│   └── order.controller.ts
-├── dtos/              # Data Transfer Objects
-│   └── order.dto.ts
-├── middlewares/       # Express middlewares
-│   ├── error.middleware.ts
-│   └── order.validation.ts
-├── models/            # Domain models
-│   └── order.model.ts
-├── routes/            # API routes
-│   ├── order.routes.ts
-│   └── order.routes.docs.ts  # Routes with Swagger documentation
-├── services/          # Business logic
-│   └── order.service.ts
-├── utils/             # Utility functions
-├── app.ts             # Express application setup
-└── server.ts          # Server entry point
-
-## Scalability
-
-The application is designed with scalability in mind:
-
-1. **Modular Architecture**: The MVCS pattern enables easy addition of new features
-2. **Separated Business Logic**: Service layer allows for easy swapping of data sources (e.g., from in-memory to database)
-3. **DTOs**: Ensures proper data validation and transformation
-4. **Pagination**: API supports pagination for large datasets
-
-## Future Enhancements
-
-- Add persistent storage (MongoDB, PostgreSQL, etc.)
-- Implement user authentication and authorization
-- Add caching layer for improved performance
-- Implement event-based architecture for order processing
-- Create Docker setup for containerization
-```
-
-2. Install dependencies:
-
-```bash
-yarn install
-```
-
-3. Create a `.env` file in the root directory with the following variables:
+3. Create a `.env` file in the root directory (or use `.env.development`, `.env.production`, etc.) with at least:
 
 ```
 NODE_ENV=development
 PORT=3000
 CORS_ORIGIN=*
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=order_management_db
+DB_USER=order_user
+DB_PASSWORD=order-management
 ```
 
 ### Running the API
@@ -189,49 +154,84 @@ yarn dev
 
 ```bash
 yarn build
-yarn start
+yarn prod
 ```
-
-## Project Structure
-
-```
-src/
-├── config/           # Application configuration
-├── controllers/      # Request handlers
-├── dtos/             # Data Transfer Objects
-├── middlewares/      # Express middlewares
-├── models/           # Data models and entities
-├── routes/           # API routes
-├── services/         # Business logic
-├── utils/            # Utility functions
-├── app.ts            # Express app setup
-└── server.ts         # Server entry point
-```
-
-## Future Enhancements
-
-- Implement database persistence (MongoDB, PostgreSQL, etc.)
-- Add authentication and authorization
-- Add unit and integration tests
-- Set up CI/CD pipeline
-- Add API documentation with Swagger/OpenAPI
-- Implement caching mechanism
 
 ## Financial Calculations
 
-### Using Decimal.js for Financial Precision
+This application uses [Decimal.js](https://mikemcl.github.io/decimal.js/) for all financial operations to ensure precise decimal arithmetic for monetary values and avoid floating-point rounding errors.
 
-To ensure accurate financial calculations without floating-point precision issues, this application uses [Decimal.js](https://mikemcl.github.io/decimal.js/) for all financial operations. This provides several benefits:
+## Running Tests
 
-- Precise decimal arithmetic for monetary values
-- Avoids floating-point rounding errors that can cause financial calculation inaccuracies
-- Allows for reliable comparison of monetary values
-- Maintains exact precision during calculations involving multiplication, division, and percentage calculations
+Run the integration tests:
 
-The following values in the application are now handled using Decimal.js:
+```bash
+yarn test
+```
 
-- Product prices
-- Order total prices
-- Discounts
-- Shipping costs
-- All financial calculations in the order processing workflow
+Run tests with coverage:
+
+```bash
+yarn test:coverage
+```
+
+#### Integration Tests
+
+The integration tests check how the API endpoints, business logic, and database work together. This helps make sure the system behaves as it would for real users. The tests use Jest to run the tests and Supertest to send HTTP requests to the API.
+
+**Test Structure**
+
+The tests are organized into several files:
+
+1. **orders.test.ts**: Tests the CRUD operations on orders
+2. **order-pricing.test.ts**: Tests the discount and pricing logic
+3. **error-handling.test.ts**: Tests the API error handling and validation
+4. **warehouse-fixtures.test.ts**: Tests warehouse-related logic
+
+**Running the Tests**
+
+- Install dependencies:
+
+  ```bash
+  yarn install
+  ```
+
+- Run the tests:
+
+  ```bash
+  yarn test
+  ```
+
+- Run the tests with coverage:
+
+  ```bash
+  yarn test:coverage
+  ```
+
+- Run the tests in watch mode:
+
+  ```bash
+  yarn test:watch
+  ```
+
+**Test Coverage**
+
+Run the test coverage report to see which parts of the code are covered by the tests:
+
+```bash
+yarn test:coverage
+```
+
+This will generate a coverage report in the `coverage` directory.
+
+**Extending the Tests**
+
+When adding new features to the API, also add corresponding tests in the appropriate test file. If a feature doesn't fit into the existing test files, create a new test file in the `src/__tests__` directory.
+
+## Scalability
+
+The application is designed with scalability in mind:
+
+1. **Modular Architecture**: The MVCS pattern enables easy addition of new features
+2. **Separated Business Logic**: Service layer allows for easy swapping of data sources (e.g., from in-memory to database)
+3. **DTOs**: Ensures proper data validation and transformation
