@@ -1,5 +1,6 @@
 import { Model, DataTypes, Optional } from 'sequelize';
 import { sequelize } from '../config/database';
+import Decimal from 'decimal.js';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
@@ -62,15 +63,18 @@ OrderItem.init(
 );
 
 // Main Order model
+// Define special type for database columns that are DECIMAL but represented as Decimal.js objects in code
+export type DecimalColumn = Decimal;
+
 export interface OrderAttributes {
   id?: string;
   orderNumber: string;
   quantity: number;
   latitude: number;
   longitude: number;
-  totalPrice: number;
-  discount: number;
-  shippingCost: number;
+  totalPrice: DecimalColumn; // Using Decimal.js for financial calculations
+  discount: DecimalColumn;
+  shippingCost: DecimalColumn;
   isValid: boolean;
   status: OrderStatus;
   createdAt?: Date;
@@ -92,9 +96,9 @@ export class Order
   public quantity!: number;
   public latitude!: number;
   public longitude!: number;
-  public totalPrice!: number;
-  public discount!: number;
-  public shippingCost!: number;
+  public totalPrice!: Decimal;
+  public discount!: Decimal;
+  public shippingCost!: Decimal;
   public isValid!: boolean;
   public status!: OrderStatus;
   public readonly createdAt!: Date;
@@ -136,19 +140,53 @@ Order.init(
       allowNull: false,
     },
     totalPrice: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(15, 4), // Higher precision for financial calculations
       allowNull: false,
       defaultValue: 0,
+      // We need to override the default getters and setters
+      get() {
+        const rawValue = this.getDataValue('totalPrice');
+        // Return Decimal instance
+        return rawValue === null ? null : new Decimal(rawValue.toString());
+      },
+      set(value: number | string | Decimal) {
+        // Store as string in DB but ensure proper conversion
+        const stringValue = value instanceof Decimal ? value.toString() : String(value);
+        // Use type assertion to handle the mismatch
+        this.setDataValue('totalPrice', stringValue as any);
+      },
     },
     discount: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(15, 4),
       allowNull: false,
       defaultValue: 0,
+      get() {
+        const rawValue = this.getDataValue('discount');
+        // Return Decimal instance
+        return rawValue === null ? null : new Decimal(rawValue.toString());
+      },
+      set(value: number | string | Decimal) {
+        // Store as string in DB but ensure proper conversion
+        const stringValue = value instanceof Decimal ? value.toString() : String(value);
+        // Use type assertion to handle the mismatch
+        this.setDataValue('discount', stringValue as any);
+      },
     },
     shippingCost: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(15, 4),
       allowNull: false,
       defaultValue: 0,
+      get() {
+        const rawValue = this.getDataValue('shippingCost');
+        // Return Decimal instance
+        return rawValue === null ? null : new Decimal(rawValue.toString());
+      },
+      set(value: number | string | Decimal) {
+        // Store as string in DB but ensure proper conversion
+        const stringValue = value instanceof Decimal ? value.toString() : String(value);
+        // Use type assertion to handle the mismatch
+        this.setDataValue('shippingCost', stringValue as any);
+      },
     },
     isValid: {
       type: DataTypes.BOOLEAN,

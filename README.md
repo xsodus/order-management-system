@@ -200,3 +200,22 @@ src/
 - Set up CI/CD pipeline
 - Add API documentation with Swagger/OpenAPI
 - Implement caching mechanism
+
+## Financial Calculations
+
+### Using Decimal.js for Financial Precision
+
+To ensure accurate financial calculations without floating-point precision issues, this application uses [Decimal.js](https://mikemcl.github.io/decimal.js/) for all financial operations. This provides several benefits:
+
+- Precise decimal arithmetic for monetary values
+- Avoids floating-point rounding errors that can cause financial calculation inaccuracies
+- Allows for reliable comparison of monetary values
+- Maintains exact precision during calculations involving multiplication, division, and percentage calculations
+
+The following values in the application are now handled using Decimal.js:
+
+- Product prices
+- Order total prices
+- Discounts
+- Shipping costs
+- All financial calculations in the order processing workflow

@@ -87,3 +87,4 @@ POST /orders
 - [x] It should be **easy to start the application and run tests locally**
 - [ ] Deploying the app to a cloud provider and showing a **CI/CD pipeline** is a plus
 - [x] Implement logging with timestamps with winston library for request tracking and debugging
+- [x] Use decimal data type of decimal.js for financial number and calculation.

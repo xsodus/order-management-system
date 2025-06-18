@@ -1,10 +1,11 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../config/database';
+import Decimal from 'decimal.js';
 
 export interface ProductAttributes {
   id?: string;
   name: string;
-  price: number;
+  price: Decimal;
   weight: number;
   createdAt?: Date;
   updatedAt?: Date;
@@ -13,7 +14,7 @@ export interface ProductAttributes {
 export class Product extends Model<ProductAttributes> implements ProductAttributes {
   public id!: string;
   public name!: string;
-  public price!: number;
+  public price!: Decimal;
   public weight!: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -49,10 +50,20 @@ Product.init(
       allowNull: false,
     },
     price: {
-      type: DataTypes.FLOAT,
+      type: DataTypes.DECIMAL(15, 4), // Higher precision for financial calculations
       allowNull: false,
       validate: {
         min: 0,
+      },
+      get() {
+        const value = this.getDataValue('price');
+        return value === null ? null : new Decimal(value.toString());
+      },
+      set(value: number | string | Decimal) {
+        // Store as string in DB but ensure proper conversion
+        const stringValue = value instanceof Decimal ? value.toString() : String(value);
+        // Use type assertion to handle the mismatch
+        this.setDataValue('price', stringValue as any);
       },
     },
     weight: {
@@ -73,7 +84,7 @@ Product.init(
 export const seedProducts = async (): Promise<void> => {
   await Product.create({
     name: 'SCOS Station P1 Pro',
-    price: 150, // $150
+    price: new Decimal(150), // $150
     weight: 0.365, // 365g converted to kg
   });
   console.log('Products seeded successfully');

@@ -1,4 +1,5 @@
 import { OrderStatus } from '../models/order.model';
+import Decimal from 'decimal.js';
 
 // DTO for verifying an order without submitting
 export interface VerifyOrderDto {
@@ -25,7 +26,7 @@ export interface WarehouseAllocationDto {
   warehouseName: string;
   quantity: number;
   distance: number;
-  shippingCost: number;
+  shippingCost: number; // Using number for API responses
 }
 
 // Response DTO for verification and creation
@@ -35,9 +36,9 @@ export interface OrderResponseDto {
   quantity: number;
   latitude: number;
   longitude: number;
-  totalPrice: number;
-  discount: number;
-  shippingCost: number;
+  totalPrice: number; // Using number for API responses
+  discount: number; // Using number for API responses
+  shippingCost: number; // Using number for API responses
   isValid: boolean;
   status?: OrderStatus;
   items?: WarehouseAllocationDto[];
@@ -70,12 +71,27 @@ export class OrderMapper {
       quantity: order.quantity,
       latitude: order.latitude,
       longitude: order.longitude,
-      totalPrice: order.totalPrice,
-      discount: order.discount,
-      shippingCost: order.shippingCost,
+      // Convert Decimal objects to numbers for API response
+      totalPrice:
+        order.totalPrice instanceof Decimal
+          ? order.totalPrice.toNumber()
+          : Number(order.totalPrice),
+      discount:
+        order.discount instanceof Decimal ? order.discount.toNumber() : Number(order.discount),
+      shippingCost:
+        order.shippingCost instanceof Decimal
+          ? order.shippingCost.toNumber()
+          : Number(order.shippingCost),
       isValid: order.isValid !== undefined ? order.isValid : true,
       status: order.status,
-      items: order.items,
+      items: order.items?.map((item: any) => ({
+        ...item,
+        // Convert shippingCost Decimal to number in items as well
+        shippingCost:
+          item.shippingCost instanceof Decimal
+            ? item.shippingCost.toNumber()
+            : Number(item.shippingCost),
+      })),
       createdAt: order.createdAt?.toISOString(),
       updatedAt: order.updatedAt?.toISOString(),
     };

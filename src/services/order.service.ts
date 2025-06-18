@@ -3,6 +3,7 @@ import Product from '../models/product.model';
 import Warehouse from '../models/warehouse.model';
 import { Op } from 'sequelize';
 import { OrderFilterDto } from '../dtos/order.dto';
+import Decimal from 'decimal.js';
 
 interface VerifyOrderDto {
   quantity: number;
@@ -22,9 +23,9 @@ interface OrderResult {
   quantity: number;
   latitude: number;
   longitude: number;
-  totalPrice: number;
-  discount: number;
-  shippingCost: number;
+  totalPrice: Decimal;
+  discount: Decimal;
+  shippingCost: Decimal;
   isValid: boolean;
   status?: OrderStatus;
   items?: any[];
@@ -37,13 +38,13 @@ interface WarehouseAllocation {
   warehouseName: string;
   quantity: number;
   distance: number;
-  shippingCost: number;
+  shippingCost: Decimal;
 }
 
 export class OrderService {
-  private SHIPPING_RATE = 0.01; // $0.01 per kg per km
-  private DEVICE_WEIGHT_KG = 0.365; // 365g in kg
-  private DEVICE_PRICE = 150; // $150
+  private SHIPPING_RATE = new Decimal(0.01); // $0.01 per kg per km
+  private DEVICE_WEIGHT_KG = new Decimal(0.365); // 365g in kg
+  private DEVICE_PRICE = new Decimal(150); // $150
 
   /**
    * Calculate distance between two points using Haversine formula
@@ -77,12 +78,12 @@ export class OrderService {
   /**
    * Calculate discount based on quantity
    */
-  private calculateDiscount(quantity: number): number {
-    if (quantity >= 250) return 0.2;
-    if (quantity >= 100) return 0.15;
-    if (quantity >= 50) return 0.1;
-    if (quantity >= 25) return 0.05;
-    return 0;
+  private calculateDiscount(quantity: number): Decimal {
+    if (quantity >= 250) return new Decimal(0.2);
+    if (quantity >= 100) return new Decimal(0.15);
+    if (quantity >= 50) return new Decimal(0.1);
+    if (quantity >= 25) return new Decimal(0.05);
+    return new Decimal(0);
   }
 
   /**
@@ -121,8 +122,9 @@ export class OrderService {
 
       if (quantityFromWarehouse > 0) {
         // Calculate shipping cost for this allocation
-        const shippingCost =
-          this.SHIPPING_RATE * quantityFromWarehouse * this.DEVICE_WEIGHT_KG * distance;
+        const shippingCost = this.SHIPPING_RATE.mul(new Decimal(quantityFromWarehouse))
+          .mul(this.DEVICE_WEIGHT_KG)
+          .mul(new Decimal(distance));
 
         allocations.push({
           warehouseId: warehouse.id,
@@ -152,19 +154,22 @@ export class OrderService {
   private calculateOrderCosts(
     quantity: number,
     allocations: WarehouseAllocation[],
-  ): { totalPrice: number; discount: number; shippingCost: number } {
+  ): { totalPrice: Decimal; discount: Decimal; shippingCost: Decimal } {
     // Calculate base price
-    const basePrice = quantity * this.DEVICE_PRICE;
+    const basePrice = this.DEVICE_PRICE.mul(new Decimal(quantity));
 
     // Calculate discount
     const discountRate = this.calculateDiscount(quantity);
-    const discount = basePrice * discountRate;
+    const discount = basePrice.mul(discountRate);
 
     // Calculate shipping cost (sum of shipping costs from all warehouses)
-    const shippingCost = allocations.reduce((sum, allocation) => sum + allocation.shippingCost, 0);
+    const shippingCost = allocations.reduce(
+      (sum, allocation) => sum.add(allocation.shippingCost),
+      new Decimal(0),
+    );
 
     // Calculate total price after discount
-    const totalPrice = basePrice - discount;
+    const totalPrice = basePrice.minus(discount);
 
     return {
       totalPrice,
@@ -176,9 +181,9 @@ export class OrderService {
   /**
    * Verify if an order is valid
    */
-  private isOrderValid(totalPrice: number, shippingCost: number): boolean {
+  private isOrderValid(totalPrice: Decimal, shippingCost: Decimal): boolean {
     // Order is invalid if shipping cost exceeds 15% of order amount after discount
-    return shippingCost <= totalPrice * 0.15;
+    return shippingCost.lte(totalPrice.mul(new Decimal(0.15)));
   }
   /**
    * Verify a potential order without submitting
@@ -266,9 +271,13 @@ export class OrderService {
         quantity: order.quantity,
         latitude: order.latitude,
         longitude: order.longitude,
-        totalPrice: order.totalPrice,
-        discount: order.discount,
-        shippingCost: order.shippingCost,
+        totalPrice:
+          order.totalPrice instanceof Decimal ? order.totalPrice : new Decimal(order.totalPrice),
+        discount: order.discount instanceof Decimal ? order.discount : new Decimal(order.discount),
+        shippingCost:
+          order.shippingCost instanceof Decimal
+            ? order.shippingCost
+            : new Decimal(order.shippingCost),
         isValid: order.isValid,
         status: order.status,
         items: allocations,
