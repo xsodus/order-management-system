@@ -35,7 +35,7 @@ jobs:
           cp -r dist deploy/
           cp package.json deploy/
           cp package-lock.json deploy/ || true
-          cp .env.production deploy/.env.production || true
+          cp .env.production deploy/.env || true
           echo "DB_HOST=${{ secrets.DB_HOST }}" >> deploy/.env
           echo "DB_PORT=${{ secrets.DB_PORT }}" >> deploy/.env
           echo "DB_USER=${{ secrets.DB_USER }}" >> deploy/.env
