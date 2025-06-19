@@ -264,7 +264,7 @@ DB_USER
 DB_PASSWORD
 DB_NAME
 
-Also, make sure that the database specified by `DB_NAME` has already been created on your database server before deploying the application.
+Additionally, ensure that the database specified by `DB_NAME` already exists on your database server before deploying the application. The database server must also have the PostGIS extension enabled, as it is required for geolocation search functionality.
 
 To verify or update your App Service environment variables:
 
