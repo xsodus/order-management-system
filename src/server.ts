@@ -16,6 +16,7 @@ logger.info(`Starting server in ${config.env} mode...`);
 
 const server = app.listen(PORT, () => {
   logger.info(`Server running in ${config.env} mode on http://localhost:${PORT}`);
+  logger.info(`list other environment variables in .env file ${JSON.stringify(config, null, 1)} `);
 });
 
 // Handle unhandled rejections
