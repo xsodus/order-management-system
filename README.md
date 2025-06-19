@@ -273,3 +273,7 @@ To verify or update your App Service environment variables:
 3. Add or update each environment secrets (key/value pair) as you would for your production environment.
 
 This ensures your application runs correctly after deployment.
+
+To verify that the deployment pipeline is functioning correctly, you can access and test the my live Swagger API documentation at:
+
+[https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs](https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs)
