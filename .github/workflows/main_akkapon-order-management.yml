@@ -40,6 +40,7 @@ jobs:
           echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env.production
           echo "DB_USER=${{ secrets.DB_USER }}" >> .env.production
           echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env.production
+          echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env.production
           ls dist
           rm -rf node_modules
           rm -rf .serverless

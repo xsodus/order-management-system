@@ -262,6 +262,9 @@ DB_HOST
 DB_PORT
 DB_USER
 DB_PASSWORD
+DB_NAME
+
+Also, make sure that the database specified by `DB_NAME` has already been created on your database server before deploying the application.
 
 To verify or update your App Service environment variables:
 
