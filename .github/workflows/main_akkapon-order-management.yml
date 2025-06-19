@@ -14,7 +14,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read #This is required for actions/checkout
-
+    environment:
+      name: 'Production'
     steps:
       - uses: actions/checkout@v4
 
@@ -34,7 +35,13 @@ jobs:
           cp -r dist deploy/
           cp package.json deploy/
           cp package-lock.json deploy/ || true
-          cp .env.development deploy/.env.production || true
+          cp .env.production deploy/.env.production || true
+          // inject secrets into the .env.production file for DB_HOST, DB_PORT, DB_USER, DB_PASSWORD
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> deploy/.env
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> deploy/.env
+          echo "DB_USER=${{ secrets.DB_USER }}" >> deploy/.env
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> deploy/.env
+          cat deploy/.env
           ls deploy
 
       - name: Zip artifact for deployment
