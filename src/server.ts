@@ -12,6 +12,8 @@ if (!fs.existsSync(logDir)) {
 
 const PORT = config.port;
 
+logger.info(`Starting server in ${config.env} mode...`);
+
 const server = app.listen(PORT, () => {
   logger.info(`Server running in ${config.env} mode on http://localhost:${PORT}`);
 });
