@@ -257,12 +257,16 @@ You can view the complete workflow configuration in the file:
  `./.github/workflows/main_akkapon-order-management.yml`
 This workflow is triggered automatically whenever you push code to the `main` branch.
 
-**Before pushing code**, make sure that the environment variable names in your `.env.development` file match those configured in your Azure App Service.
+**Before pushing code**, make sure that the secret variable are setup for:
+DB_HOST
+DB_PORT
+DB_USER
+DB_PASSWORD
 
 To verify or update your App Service environment variables:
 
-1. Go to your App Service in the Azure Portal.
-2. Navigate to **Settings** → **Configuration**.
-3. Add or update each environment variable (key/value pair) as you would for your production environment.
+1. Go to your GitHub repository.
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**.
+3. Add or update each environment secrets (key/value pair) as you would for your production environment.
 
 This ensures your application runs correctly after deployment.

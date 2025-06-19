@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read #This is required for actions/checkout
@@ -24,24 +24,27 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: Install Yarn
+        run: |
+          curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+          echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+          sudo apt-get update && sudo apt-get install -y yarn
       - name: npm install, build
         run: |
-          npm install
-          npm run build
+          yarn install
+          yarn build
 
       - name: Copy production files
         run: |
-          mkdir deploy
-          cp -r dist deploy/
-          cp package.json deploy/
-          cp package-lock.json deploy/ || true
-          cp .env.production deploy/.env || true
-          echo "DB_HOST=${{ secrets.DB_HOST }}" >> deploy/.env
-          echo "DB_PORT=${{ secrets.DB_PORT }}" >> deploy/.env
-          echo "DB_USER=${{ secrets.DB_USER }}" >> deploy/.env
-          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> deploy/.env
-          cat deploy/.env
-          ls deploy
+          cp .env.production dist || true
+          echo "DB_HOST=${{ secrets.DB_HOST }}" >> dist/.env.production
+          echo "DB_PORT=${{ secrets.DB_PORT }}" >> dist/.env.production
+          echo "DB_USER=${{ secrets.DB_USER }}" >> dist/.env.production
+          echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> dist/.env.production
+          cat dist/.env.production
+          ls dist
+          rm -rf node_modules
+          rm -rf .serverless
 
       - name: Zip artifact for deployment
         run: cd deploy && zip -r ../release.zip .
@@ -51,23 +54,6 @@ jobs:
         with:
           name: node-app
           path: release.zip
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: node-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
-
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
