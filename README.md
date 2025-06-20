@@ -68,7 +68,7 @@ order-management-system/
 
 - **Rate**: $0.01 per kg per kilometer
 - **Device Weight**: 365 grams
-- **Distance**: Calculated using Haversine formula
+- **Distance**: Calculated using PostGIS spatial functions with WGS84 ellipsoid for high accuracy
 - **Optimization**: Automatic warehouse allocation to minimize total shipping cost
 
 ### Warehouse Allocation Strategy
@@ -86,7 +86,7 @@ This application uses [Decimal.js](https://mikemcl.github.io/decimal.js/) for al
 
 ### Prerequisites
 
-- Node.js (v20 or higher)
+- Node.js (v20.18.3 or higher)
 - Yarn or npm
 - Docker (for local Postgres)
 
@@ -139,7 +139,7 @@ All endpoints are prefixed with `/api`.
 ### Orders
 
 - **GET /api/orders** — List all orders with complete warehouse allocation details
-- **POST /api/orders/verify** — Verify an order (calculate price, shipping, allocation) without creating it
+- **GET /api/orders/verify** — Verify an order (calculate price, shipping, allocation) without creating it
 - **POST /api/orders** — Create a new order with optimized warehouse allocation
 
 ### Endpoint Features
@@ -251,7 +251,7 @@ All endpoints are prefixed with `/api`.
 
 **Calculation Details:**
 
-- `distance`: Calculated using Haversine formula (km)
+- `distance`: Calculated using PostGIS spatial functions with WGS84 ellipsoid (km)
 - `shippingCost`: $0.01 × quantity × 0.365kg × distance (per warehouse)
 
 #### Error Response Schemas

@@ -40,7 +40,7 @@ API documentation for the Order Management System. This system allows you to ver
 ### Shipping Calculation
 - **Rate**: $0.01 per kg per kilometer
 - **Device Weight**: 365 grams
-- **Distance**: Calculated using Haversine formula
+- **Distance**: Calculated using PostGIS spatial functions with WGS84 ellipsoid for high accuracy
 - **Optimization**: Automatic warehouse allocation to minimize total shipping cost
 
 ### Warehouse Allocation Strategy
@@ -96,7 +96,7 @@ API documentation for the Order Management System. This system allows you to ver
               type: 'number',
               format: 'double',
               description:
-                'Distance from the customer in kilometers (calculated using Haversine formula)',
+                'Distance from the customer in kilometers (calculated using PostGIS spatial functions)',
               minimum: 0,
               example: 12.5,
             },
@@ -241,7 +241,6 @@ API documentation for the Order Management System. This system allows you to ver
               type: 'integer',
               description: 'Number of devices to order',
               minimum: 1,
-              maximum: 10000,
               example: 10,
             },
             latitude: {
@@ -270,7 +269,6 @@ API documentation for the Order Management System. This system allows you to ver
               type: 'integer',
               description: 'Number of devices to order',
               minimum: 1,
-              maximum: 10000,
               example: 10,
             },
             latitude: {
