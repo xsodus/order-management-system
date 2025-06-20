@@ -136,7 +136,7 @@ describe('Order API Integration Tests', () => {
       const response = await testClient.get('/api/orders');
       expect(response.status).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body.length).toBeGreaterThanOrEqual(testOrders.length);
+      expect(response.body.length).toBe(testOrders.length);
       // Validate that each order has basePrice
       response.body.forEach((order: any) => {
         expect(order).toHaveProperty('basePrice');
