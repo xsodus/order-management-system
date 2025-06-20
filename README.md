@@ -184,7 +184,7 @@ All endpoints are prefixed with `/api`.
 
 **Validation Rules:**
 
-- `quantity`: Integer between 1 and 10,000
+- `quantity`: Integer and it must be higher than 0
 - `latitude`: Number between -90 and 90 (decimal degrees)
 - `longitude`: Number between -180 and 180 (decimal degrees)
 
