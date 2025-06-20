@@ -29,7 +29,6 @@ const orderController = new OrderController();
  *         schema:
  *           type: integer
  *           minimum: 1
- *           maximum: 10000
  *         required: true
  *         description: Number of devices to order
  *         example: 100
