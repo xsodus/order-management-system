@@ -2,6 +2,18 @@
 
 A RESTful API for managing orders, built with Node.js, Express, and TypeScript following the MVCS (Model-View-Controller-Service) architecture.
 
+## Table of Contents
+
+- [Architecture Overview](#architecture-overview)
+- [Business Logic](#business-logic)
+- [Getting Started](#getting-started)
+- [API Endpoints](#api-endpoints)
+- [API Documentation (Swagger)](#api-documentation-swagger)
+- [Database & Docker](#database--docker)
+- [Logging System](#logging-system)
+- [Testing](#testing)
+- [Deployment & CI/CD](#deployment--cicd)
+
 ## Architecture Overview
 
 This project follows the MVCS (Model-View-Controller-Service) architecture:
@@ -15,7 +27,7 @@ This project follows the MVCS (Model-View-Controller-Service) architecture:
 - **Config**: For application configuration (including database, environment, and swagger)
 - **Logging**: Winston-based logging system with request tracking
 
-## Project Structure
+### Project Structure
 
 ```
 order-management-system/
@@ -41,41 +53,9 @@ order-management-system/
 └── README.md
 ```
 
-## API Documentation (OpenAPI/Swagger)
+## Business Logic
 
-- **Title:** Order Management API Documentation
-- **Version:** (see package.json)
-- **Description:** Comprehensive API documentation for the Order Management System with detailed business logic, pricing rules, and shipping calculations. This system allows you to verify order pricing and warehouse allocation, create orders, and retrieve order history with automatic optimization.
-- **Contact:** support@example.com
-- **License:** MIT
-- **Base Path:** `/api`
-- **Swagger UI:**
-  - Local: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-  - Production: [https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs](https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs)
-
-### API Features Documentation
-
-#### 🎯 Order Verification
-
-- Preview pricing and shipping costs before placing orders
-- See optimal warehouse allocation strategy
-- No inventory impact - perfect for cost estimation
-
-#### 📦 Order Creation
-
-- Create orders with automatic inventory allocation
-- Optimized shipping cost calculation
-- Real-time stock validation
-
-#### 📊 Order Management
-
-- Retrieve all orders with complete details
-- Track order status and fulfillment progress
-- View historical order data
-
-### Business Logic Documentation
-
-#### Pricing Structure
+### Pricing Structure
 
 - **Base Price**: $150 per device
 - **Quantity Discounts**:
@@ -84,19 +64,73 @@ order-management-system/
   - 100-249 devices: 15% discount
   - 250+ devices: 20% discount
 
-#### Shipping Calculation
+### Shipping Calculation
 
 - **Rate**: $0.01 per kg per kilometer
 - **Device Weight**: 365 grams
 - **Distance**: Calculated using Haversine formula
 - **Optimization**: Automatic warehouse allocation to minimize total shipping cost
 
-#### Warehouse Allocation Strategy
+### Warehouse Allocation Strategy
 
 1. Calculate distance from customer to all warehouses
 2. Sort warehouses by proximity
 3. Allocate stock from nearest warehouses first
 4. Minimize total shipping cost across all allocations
+
+### Financial Calculations
+
+This application uses [Decimal.js](https://mikemcl.github.io/decimal.js/) for all financial operations to ensure precise decimal arithmetic for monetary values and avoid floating-point rounding errors.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (v20 or higher)
+- Yarn or npm
+- Docker (for local Postgres)
+
+### Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/order-management-system.git
+cd order-management-system
+```
+
+2. Install dependencies:
+
+```bash
+yarn install
+# or
+npm install
+```
+
+3. Create a `.env` file in the root directory (or use `.env.development`, `.env.production`, etc.) with at least:
+
+```
+NODE_ENV=development
+PORT=3000
+CORS_ORIGIN=*
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=order_management_db
+DB_USER=order_user
+DB_PASSWORD=order-management
+```
+
+4. Start the database:
+
+```bash
+yarn db:up
+```
+
+5. Run the API in development mode:
+
+```bash
+yarn dev
+```
 
 ## API Endpoints
 
@@ -108,9 +142,9 @@ All endpoints are prefixed with `/api`.
 - **POST /api/orders/verify** — Verify an order (calculate price, shipping, allocation) without creating it
 - **POST /api/orders** — Create a new order with optimized warehouse allocation
 
-#### Enhanced Endpoint Features
+### Endpoint Features
 
-##### GET /api/orders/verify
+#### GET /api/orders/verify
 
 - **Purpose**: Preview order costs and warehouse allocation without creating an order
 - **Features**:
@@ -118,9 +152,8 @@ All endpoints are prefixed with `/api`.
   - Shows quantity-based discount application
   - Provides shipping cost breakdown by warehouse
   - No inventory impact - perfect for cost estimation
-- **Business Logic**: Applies pricing rules and shipping optimization automatically
 
-##### POST /api/orders
+#### POST /api/orders
 
 - **Purpose**: Create a new order with automatic optimization
 - **Features**:
@@ -129,7 +162,7 @@ All endpoints are prefixed with `/api`.
   - Order status tracking (PENDING → PROCESSING → COMPLETED)
   - Optimized shipping cost calculation
 
-##### GET /api/orders
+#### GET /api/orders
 
 - **Purpose**: Retrieve all orders with complete details
 - **Features**:
@@ -137,9 +170,9 @@ All endpoints are prefixed with `/api`.
   - Shows historical pricing and allocation data
   - Displays order status and fulfillment progress
 
-#### Request/Response Schemas
+### Request/Response Schemas
 
-##### CreateOrderDto & VerifyOrderDto
+#### CreateOrderDto & VerifyOrderDto
 
 ```json
 {
@@ -155,7 +188,7 @@ All endpoints are prefixed with `/api`.
 - `latitude`: Number between -90 and 90 (decimal degrees)
 - `longitude`: Number between -180 and 180 (decimal degrees)
 
-##### OrderResponseDto
+#### OrderResponseDto
 
 ```json
 {
@@ -202,7 +235,7 @@ All endpoints are prefixed with `/api`.
 - `shippingCost`: Total shipping cost optimized across warehouses
 - `items`: Array of warehouse allocations with individual shipping costs
 
-##### WarehouseAllocationDto
+#### WarehouseAllocationDto
 
 ```json
 {
@@ -221,7 +254,7 @@ All endpoints are prefixed with `/api`.
 - `distance`: Calculated using Haversine formula (km)
 - `shippingCost`: $0.01 × quantity × 0.365kg × distance (per warehouse)
 
-##### Error Response Schemas
+#### Error Response Schemas
 
 **Basic Error:**
 
@@ -251,12 +284,43 @@ All endpoints are prefixed with `/api`.
 }
 ```
 
-##### Order Status Enum
+#### Order Status Enum
 
 - `PENDING`
 - `PROCESSING`
 - `COMPLETED`
 - `CANCELLED`
+
+## API Documentation (Swagger)
+
+Access the interactive API documentation and testing interface via Swagger UI:
+
+- **Local**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+- **Production**: [https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs](https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs)
+
+### Documentation Features
+
+- **Complete Business Logic**: Detailed explanations of pricing rules, shipping calculations, and warehouse allocation strategies
+- **Interactive Examples**: Real-world examples with multiple warehouses and discount scenarios
+- **Validation Rules**: Complete input validation with min/max values and format requirements
+- **Error Handling**: Comprehensive error response documentation with examples
+
+## Database & Docker
+
+Uses PostgreSQL (with PostGIS) via Docker Compose for local development. Database config is managed via environment variables and `src/config/`.
+
+### Database Commands
+
+```bash
+# Start the database
+yarn db:up
+
+# Stop the database
+yarn db:down
+
+# Reset the database
+yarn db:reset
+```
 
 ## Logging System
 
@@ -283,132 +347,33 @@ logger.warn('Something unusual happened', { details: details });
 logger.error('Operation failed', { error: error.message });
 ```
 
-## Database & Docker
+## Testing
 
-- Uses PostgreSQL (with PostGIS) via Docker Compose for local development.
-- Database config is managed via environment variables and `src/config/`.
-- To start the database:
+### Running Tests
 
 ```bash
-yarn db:up
-```
-
-- To stop the database:
-
-```bash
-yarn db:down
-```
-
-- To reset the database:
-
-```bash
-yarn db:reset
-```
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v20 or higher)
-- Yarn or npm
-- Docker (for local Postgres)
-
-### Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/yourusername/order-management-system.git
-cd order-management-system
-```
-
-2. Install dependencies:
-
-```bash
-yarn install
-# or
-npm install
-```
-
-3. Create a `.env` file in the root directory (or use `.env.development`, `.env.production`, etc.) with at least:
-
-```
-NODE_ENV=development
-PORT=3000
-CORS_ORIGIN=*
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=order_management_db
-DB_USER=order_user
-DB_PASSWORD=order-management
-```
-
-### Running the API
-
-#### Development mode:
-
-```bash
-yarn dev
-```
-
-## Financial Calculations
-
-This application uses [Decimal.js](https://mikemcl.github.io/decimal.js/) for all financial operations to ensure precise decimal arithmetic for monetary values and avoid floating-point rounding errors.
-
-## Running Tests
-
-Run the integration tests:
-
-```bash
+# Run all tests
 yarn test
-```
 
-Run tests with coverage:
-
-```bash
+# Run tests with coverage
 yarn test:coverage
+
+# Run tests in watch mode
+yarn test:watch
 ```
 
-#### Integration Tests
+### Test Structure
 
-The integration tests check how the API endpoints, business logic, and database work together. This helps make sure the system behaves as it would for real users. The tests use Jest to run the tests and Supertest to send HTTP requests to the API.
-
-**Test Structure**
-
-The tests are organized into several files:
+The integration tests check how the API endpoints, business logic, and database work together:
 
 1. **orders.test.ts**: Tests the CRUD operations on orders
 2. **order-pricing.test.ts**: Tests the discount and pricing logic
 3. **error-handling.test.ts**: Tests the API error handling and validation
 4. **warehouse-fixtures.test.ts**: Tests warehouse-related logic
 
-**Running the Tests**
+The tests use Jest to run the tests and Supertest to send HTTP requests to the API.
 
-- Install dependencies:
-
-  ```bash
-  yarn install
-  ```
-
-- Run the tests:
-
-  ```bash
-  yarn test
-  ```
-
-- Run the tests with coverage:
-
-  ```bash
-  yarn test:coverage
-  ```
-
-- Run the tests in watch mode:
-
-  ```bash
-  yarn test:watch
-  ```
-
-**Test Coverage**
+### Test Coverage
 
 Run the test coverage report to see which parts of the code are covered by the tests:
 
@@ -418,9 +383,43 @@ yarn test:coverage
 
 This will generate a coverage report in the `coverage` directory.
 
-**Extending the Tests**
+## Deployment & CI/CD
 
-When adding new features to the API, also add corresponding tests in the appropriate test file. If a feature doesn't fit into the existing test files, create a new test file in the `src/__tests__` directory.
+This project uses GitHub Actions for automated deployment to Azure App Service. The workflow was set up by following [this Microsoft guide](https://learn.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=openid%2Caspnetcore).
+
+### Workflow Configuration
+
+You can view the complete workflow configuration in: `./.github/workflows/main_akkapon-order-management.yml`
+
+This workflow is triggered automatically whenever you push code to the `main` branch.
+
+### Environment Variables Setup
+
+**Before pushing code**, ensure these secret variables are configured in GitHub:
+
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+
+### Database Requirements
+
+- The database specified by `DB_NAME` must already exist on your database server
+- The database server must have the PostGIS extension enabled (required for geolocation functionality)
+
+### Configuring Secrets
+
+To verify or update your App Service environment variables:
+
+1. Go to your GitHub repository
+2. Navigate to **Settings** → **Secrets and variables** → **Actions**
+3. Add or update each environment secret (key/value pair) for your production environment
+
+### Live Demo
+
+You can test the live deployment at:
+[https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs](https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs)
 
 ## Scalability
 
@@ -429,79 +428,3 @@ The application is designed with scalability in mind:
 1. **Modular Architecture**: The MVCS pattern enables easy addition of new features
 2. **Separated Business Logic**: Service layer allows for easy swapping of data sources (e.g., from in-memory to database)
 3. **DTOs**: Ensures proper data validation and transformation
-
-## API Documentation & Testing with Swagger
-
-You can interactively explore and test the API using the built-in Swagger UI with comprehensive documentation.
-
-### Enhanced Swagger Documentation Features
-
-#### 📋 **Comprehensive API Reference**
-
-- **Complete Business Logic**: Detailed explanations of pricing rules, shipping calculations, and warehouse allocation strategies
-- **Interactive Examples**: Real-world examples with multiple warehouses and discount scenarios
-- **Validation Rules**: Complete input validation with min/max values and format requirements
-- **Error Handling**: Comprehensive error response documentation with examples
-
-#### 🎯 **Detailed Endpoint Documentation**
-
-- **Verify Order Endpoint**: Full business logic explanation including discount tiers and optimization strategy
-- **Create Order Endpoint**: Complete workflow description with warnings and inventory impact details
-- **List Orders Endpoint**: Detailed response structure with warehouse information merging
-
-#### 💼 **Business Logic Documentation**
-
-- **Pricing Structure**: Complete $150 base price and quantity discount tier documentation
-- **Shipping Calculation**: Detailed $0.01/kg/km formula with 365g device weight specifications
-- **Warehouse Optimization**: Step-by-step allocation strategy using Haversine distance calculations
-
-### Accessing Swagger UI
-
-1. **Start the API server** (in development mode):
-
-   ```bash
-   yarn dev
-   ```
-
-   By default, the server runs on [http://localhost:3000](http://localhost:3000).
-
-2. **Open your browser and go to:**
-   [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
-
-   This page displays the enhanced Swagger UI with:
-
-   - Complete API overview with features breakdown
-   - Detailed business logic explanations
-   - Interactive examples with realistic data
-   - Comprehensive validation and error documentation
-   - Professional API documentation structure
-
-## Deployment & CI/CD
-
-This project uses GitHub Actions for automated deployment to Azure App Service.  
- The workflow was set up by following [this Microsoft guide](https://learn.microsoft.com/en-us/azure/app-service/deploy-github-actions?tabs=openid%2Caspnetcore).
-
-You can view the complete workflow configuration in the file:  
- `./.github/workflows/main_akkapon-order-management.yml`
-This workflow is triggered automatically whenever you push code to the `main` branch.
-
-**Before pushing code**, make sure that the secret variable are setup for:
-DB_HOST
-DB_PORT
-DB_USER
-DB_PASSWORD
-DB_NAME
-
-Additionally, ensure that the database specified by `DB_NAME` already exists on your database server before deploying the application. The database server must also have the PostGIS extension enabled, as it is required for geolocation search functionality.
-
-To verify or update your App Service environment variables:
-
-1. Go to your GitHub repository.
-2. Navigate to **Settings** → **Secrets and variables** → **Actions**.
-3. Add or update each environment secrets (key/value pair) as you would for your production environment.
-
-This ensures your application runs correctly after deployment.
-
-To verify that the deployment pipeline is functioning correctly, you can access and test the my live Swagger API documentation at:
-
-[https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs](https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs)
