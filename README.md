@@ -41,21 +41,222 @@ order-management-system/
 └── README.md
 ```
 
+## API Documentation (OpenAPI/Swagger)
+
+- **Title:** Order Management API Documentation
+- **Version:** (see package.json)
+- **Description:** Comprehensive API documentation for the Order Management System with detailed business logic, pricing rules, and shipping calculations. This system allows you to verify order pricing and warehouse allocation, create orders, and retrieve order history with automatic optimization.
+- **Contact:** support@example.com
+- **License:** MIT
+- **Base Path:** `/api`
+- **Swagger UI:**
+  - Local: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+  - Production: [https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs](https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs)
+
+### API Features Documentation
+
+#### 🎯 Order Verification
+
+- Preview pricing and shipping costs before placing orders
+- See optimal warehouse allocation strategy
+- No inventory impact - perfect for cost estimation
+
+#### 📦 Order Creation
+
+- Create orders with automatic inventory allocation
+- Optimized shipping cost calculation
+- Real-time stock validation
+
+#### 📊 Order Management
+
+- Retrieve all orders with complete details
+- Track order status and fulfillment progress
+- View historical order data
+
+### Business Logic Documentation
+
+#### Pricing Structure
+
+- **Base Price**: $150 per device
+- **Quantity Discounts**:
+  - 25-49 devices: 5% discount
+  - 50-99 devices: 10% discount
+  - 100-249 devices: 15% discount
+  - 250+ devices: 20% discount
+
+#### Shipping Calculation
+
+- **Rate**: $0.01 per kg per kilometer
+- **Device Weight**: 365 grams
+- **Distance**: Calculated using Haversine formula
+- **Optimization**: Automatic warehouse allocation to minimize total shipping cost
+
+#### Warehouse Allocation Strategy
+
+1. Calculate distance from customer to all warehouses
+2. Sort warehouses by proximity
+3. Allocate stock from nearest warehouses first
+4. Minimize total shipping cost across all allocations
+
 ## API Endpoints
+
+All endpoints are prefixed with `/api`.
 
 ### Orders
 
-- **GET /api/orders** - Get all orders with filtering and pagination
-- **GET /api/orders/:id** - Get a specific order by ID
-- **POST /api/orders** - Create a new order
-- **PATCH /api/orders/:id/status** - Update order status
-- **DELETE /api/orders/:id** - Delete an order
+- **GET /api/orders** — List all orders with complete warehouse allocation details
+- **POST /api/orders/verify** — Verify an order (calculate price, shipping, allocation) without creating it
+- **POST /api/orders** — Create a new order with optimized warehouse allocation
 
-### Order Items
+#### Enhanced Endpoint Features
 
-- **POST /api/orders/:id/items** - Add item to an order
-- **PATCH /api/orders/:id/items/:itemId** - Update an order item
-- **DELETE /api/orders/:id/items/:itemId** - Remove an item from an order
+##### GET /api/orders/verify
+
+- **Purpose**: Preview order costs and warehouse allocation without creating an order
+- **Features**:
+  - Calculates optimal warehouse distribution
+  - Shows quantity-based discount application
+  - Provides shipping cost breakdown by warehouse
+  - No inventory impact - perfect for cost estimation
+- **Business Logic**: Applies pricing rules and shipping optimization automatically
+
+##### POST /api/orders
+
+- **Purpose**: Create a new order with automatic optimization
+- **Features**:
+  - Real-time stock validation
+  - Automatic inventory allocation
+  - Order status tracking (PENDING → PROCESSING → COMPLETED)
+  - Optimized shipping cost calculation
+
+##### GET /api/orders
+
+- **Purpose**: Retrieve all orders with complete details
+- **Features**:
+  - Includes warehouse information merged into order items
+  - Shows historical pricing and allocation data
+  - Displays order status and fulfillment progress
+
+#### Request/Response Schemas
+
+##### CreateOrderDto & VerifyOrderDto
+
+```json
+{
+  "quantity": 10,
+  "latitude": 40.712776,
+  "longitude": -74.005974
+}
+```
+
+**Validation Rules:**
+
+- `quantity`: Integer between 1 and 10,000
+- `latitude`: Number between -90 and 90 (decimal degrees)
+- `longitude`: Number between -180 and 180 (decimal degrees)
+
+##### OrderResponseDto
+
+```json
+{
+  "id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "orderNumber": "ORD-123456",
+  "quantity": 100,
+  "latitude": 40.712776,
+  "longitude": -74.005974,
+  "basePrice": 15000.0,
+  "totalPrice": 12750.0,
+  "discount": 2250.0,
+  "shippingCost": 45.2,
+  "status": "PENDING",
+  "items": [
+    {
+      "warehouseId": "warehouse-1",
+      "warehouseName": "NYC Warehouse",
+      "quantity": 60,
+      "distance": 15.2,
+      "shippingCost": 33.3,
+      "latitude": 40.7589,
+      "longitude": -73.9851
+    },
+    {
+      "warehouseId": "warehouse-2",
+      "warehouseName": "NJ Warehouse",
+      "quantity": 40,
+      "distance": 25.8,
+      "shippingCost": 11.9,
+      "latitude": 40.6892,
+      "longitude": -74.0445
+    }
+  ],
+  "createdAt": "2024-06-20T12:34:56.000Z",
+  "updatedAt": "2024-06-20T12:34:56.000Z"
+}
+```
+
+**Field Descriptions:**
+
+- `basePrice`: Quantity × $150 (before discount)
+- `totalPrice`: Base price after quantity discount applied
+- `discount`: Amount saved through quantity discount (5%-20%)
+- `shippingCost`: Total shipping cost optimized across warehouses
+- `items`: Array of warehouse allocations with individual shipping costs
+
+##### WarehouseAllocationDto
+
+```json
+{
+  "warehouseId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "warehouseName": "NYC Warehouse",
+  "quantity": 60,
+  "distance": 15.2,
+  "shippingCost": 33.3,
+  "latitude": 40.7589,
+  "longitude": -73.9851
+}
+```
+
+**Calculation Details:**
+
+- `distance`: Calculated using Haversine formula (km)
+- `shippingCost`: $0.01 × quantity × 0.365kg × distance (per warehouse)
+
+##### Error Response Schemas
+
+**Basic Error:**
+
+```json
+{
+  "status": "error",
+  "message": "Insufficient stock available for the requested quantity"
+}
+```
+
+**Validation Error:**
+
+```json
+{
+  "status": "error",
+  "message": "Validation failed",
+  "errors": [
+    {
+      "field": "quantity",
+      "message": "Quantity must be at least 1"
+    },
+    {
+      "field": "latitude",
+      "message": "Latitude must be between -90 and 90"
+    }
+  ]
+}
+```
+
+##### Order Status Enum
+
+- `PENDING`
+- `PROCESSING`
+- `COMPLETED`
+- `CANCELLED`
 
 ## Logging System
 
@@ -231,7 +432,28 @@ The application is designed with scalability in mind:
 
 ## API Documentation & Testing with Swagger
 
-You can interactively explore and test the API using the built-in Swagger UI.
+You can interactively explore and test the API using the built-in Swagger UI with comprehensive documentation.
+
+### Enhanced Swagger Documentation Features
+
+#### 📋 **Comprehensive API Reference**
+
+- **Complete Business Logic**: Detailed explanations of pricing rules, shipping calculations, and warehouse allocation strategies
+- **Interactive Examples**: Real-world examples with multiple warehouses and discount scenarios
+- **Validation Rules**: Complete input validation with min/max values and format requirements
+- **Error Handling**: Comprehensive error response documentation with examples
+
+#### 🎯 **Detailed Endpoint Documentation**
+
+- **Verify Order Endpoint**: Full business logic explanation including discount tiers and optimization strategy
+- **Create Order Endpoint**: Complete workflow description with warnings and inventory impact details
+- **List Orders Endpoint**: Detailed response structure with warehouse information merging
+
+#### 💼 **Business Logic Documentation**
+
+- **Pricing Structure**: Complete $150 base price and quantity discount tier documentation
+- **Shipping Calculation**: Detailed $0.01/kg/km formula with 365g device weight specifications
+- **Warehouse Optimization**: Step-by-step allocation strategy using Haversine distance calculations
 
 ### Accessing Swagger UI
 
@@ -246,7 +468,13 @@ You can interactively explore and test the API using the built-in Swagger UI.
 2. **Open your browser and go to:**
    [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
 
-   This page displays the Swagger UI, which lists all available API endpoints, their parameters, request/response schemas, and example payloads.
+   This page displays the enhanced Swagger UI with:
+
+   - Complete API overview with features breakdown
+   - Detailed business logic explanations
+   - Interactive examples with realistic data
+   - Comprehensive validation and error documentation
+   - Professional API documentation structure
 
 ## Deployment & CI/CD
 
