@@ -1,7 +1,6 @@
 import request from 'supertest';
 import './setup'; // Import global setup
 import { sequelize } from '../config/database';
-import { testDatabase } from '../config/test-database';
 import app from '../app';
 import Warehouse from '../models/warehouse.model';
 
