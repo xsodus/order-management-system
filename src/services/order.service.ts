@@ -1,6 +1,6 @@
 import Order, { OrderItem, OrderStatus } from '../models/order.model';
 import Warehouse from '../models/warehouse.model';
-import { QueryTypes } from 'sequelize';
+import { QueryTypes, Transaction } from 'sequelize';
 import Decimal from 'decimal.js';
 import { sequelize } from '../config/database';
 import logger from '../utils/logger';
@@ -62,15 +62,21 @@ export class OrderService {
   /**
    * Find optimal warehouse allocation to minimize shipping cost
    * Uses SQL-based distance calculation for better performance
+   * Now supports transactions with row locking
    */
   private async findOptimalWarehouses(
     quantity: number,
     latitude: number,
     longitude: number,
+    transaction?: Transaction,
   ): Promise<WarehouseAllocation[]> {
     // Use SQL query to calculate distances and sort warehouses by proximity
     // This is much more efficient than fetching all warehouses and calculating distances in JavaScript
-    const warehousesWithDistance = await this.getWarehousesByDistance(latitude, longitude);
+    const warehousesWithDistance = await this.getWarehousesByDistance(
+      latitude,
+      longitude,
+      transaction,
+    );
 
     logger.debug(
       `Found ${warehousesWithDistance.length} warehouses with stock for allocation` +
@@ -119,10 +125,12 @@ export class OrderService {
   /**
    * Get warehouses ordered by distance using PostGIS spatial calculations
    * Optimized for PostgreSQL with PostGIS extension
+   * Now supports transactions with row locking for consistent reads
    */
   private async getWarehousesByDistance(
     targetLat: number,
     targetLng: number,
+    transaction?: Transaction,
   ): Promise<
     Array<{
       id: string;
@@ -134,6 +142,9 @@ export class OrderService {
     }>
   > {
     // Use PostgreSQL with PostGIS for distance calculation
+    // Add FOR UPDATE to lock rows when in a transaction (for createOrder)
+    const lockClause = transaction ? 'FOR UPDATE' : '';
+
     const query = `
       SELECT 
         id,
@@ -150,12 +161,14 @@ export class OrderService {
         FROM warehouses
         WHERE stock > 0
         ORDER BY distance ASC
+        ${lockClause}
       `;
     const replacements = { targetLat, targetLng };
 
     const results = await sequelize.query(query, {
       replacements,
       type: QueryTypes.SELECT,
+      transaction,
     });
 
     return results as Array<{
@@ -211,13 +224,19 @@ export class OrderService {
 
   /**
    * Verify a potential order without submitting
+   * Now supports transactions for consistency when called within createOrder
    */
-  async verifyOrder(orderData: VerifyOrderDto): Promise<OrderResult> {
+  async verifyOrder(orderData: VerifyOrderDto, transaction?: Transaction): Promise<OrderResult> {
     try {
       const { quantity, latitude, longitude } = orderData;
 
       // Find optimal warehouse allocation
-      const allocations = await this.findOptimalWarehouses(quantity, latitude, longitude);
+      const allocations = await this.findOptimalWarehouses(
+        quantity,
+        latitude,
+        longitude,
+        transaction,
+      );
 
       // Calculate costs
       const { basePrice, totalPrice, discount, shippingCost } = this.calculateOrderCosts(
@@ -244,68 +263,98 @@ export class OrderService {
   }
 
   /**
-   * Create a new order
+   * Create a new order with transaction and row locking for inventory consistency
    */
   async createOrder(orderData: CreateOrderDto): Promise<OrderResult> {
-    try {
-      const { quantity, latitude, longitude } = orderData;
+    // Use a transaction to ensure data consistency and prevent race conditions
+    return await sequelize.transaction(async (transaction: Transaction) => {
+      try {
+        const { quantity, latitude, longitude } = orderData;
 
-      // First verify the order - this will throw an error if invalid
-      const verification = await this.verifyOrder(orderData);
+        // Verify the order within the transaction with row locking
+        // This will lock warehouse rows to prevent concurrent modifications
+        const verification = await this.verifyOrder(orderData, transaction);
 
-      // Create order in database
-      const order = await Order.create({
-        quantity,
-        latitude,
-        longitude,
-        totalPrice: verification.totalPrice,
-        discount: verification.discount,
-        shippingCost: verification.shippingCost,
-        status: OrderStatus.PENDING,
-      });
+        // Create order in database within the transaction
+        const order = await Order.create(
+          {
+            quantity,
+            latitude,
+            longitude,
+            totalPrice: verification.totalPrice,
+            discount: verification.discount,
+            shippingCost: verification.shippingCost,
+            status: OrderStatus.PENDING,
+          },
+          { transaction },
+        );
 
-      // Create order items and update warehouse inventory
-      const allocations = verification.items as WarehouseAllocation[];
+        // Create order items and update warehouse inventory within the transaction
+        const allocations = verification.items as WarehouseAllocation[];
 
-      for (const allocation of allocations) {
-        // Create order item
-        await OrderItem.create({
-          orderId: order.id,
-          warehouseId: allocation.warehouseId,
-          quantity: allocation.quantity,
-          shippingCost: allocation.shippingCost, // Store shippingCost per item
-        });
+        for (const allocation of allocations) {
+          // Create order item within the transaction
+          await OrderItem.create(
+            {
+              orderId: order.id,
+              warehouseId: allocation.warehouseId,
+              quantity: allocation.quantity,
+              shippingCost: allocation.shippingCost, // Store shippingCost per item
+            },
+            { transaction },
+          );
 
-        // Update warehouse inventory
-        const warehouse = await Warehouse.findByPk(allocation.warehouseId);
-        if (warehouse) {
-          await warehouse.updateStock(allocation.quantity);
+          // Find and lock the warehouse row for update
+          const warehouse = await Warehouse.findByPk(allocation.warehouseId, {
+            transaction,
+            lock: transaction.LOCK.UPDATE, // Lock the row for update
+          });
+
+          if (!warehouse) {
+            throw new Error(`Warehouse ${allocation.warehouseId} not found`);
+          }
+
+          // Double-check stock availability after locking (in case it changed)
+          if (warehouse.stock < allocation.quantity) {
+            throw new Error(
+              `Insufficient stock in warehouse ${warehouse.name}. Available: ${warehouse.stock}, Required: ${allocation.quantity}`,
+            );
+          }
+
+          // Update warehouse inventory within the transaction
+          await warehouse.updateStock(allocation.quantity, transaction);
         }
-      }
 
-      // Return the created order with all details
-      return {
-        id: order.id,
-        orderNumber: order.orderNumber,
-        quantity: order.quantity,
-        latitude: order.latitude,
-        longitude: order.longitude,
-        basePrice: verification.basePrice,
-        totalPrice:
-          order.totalPrice instanceof Decimal ? order.totalPrice : new Decimal(order.totalPrice),
-        discount: order.discount instanceof Decimal ? order.discount : new Decimal(order.discount),
-        shippingCost:
-          order.shippingCost instanceof Decimal
-            ? order.shippingCost
-            : new Decimal(order.shippingCost),
-        status: order.status,
-        items: allocations,
-        createdAt: order.createdAt,
-        updatedAt: order.updatedAt,
-      };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to create order');
-    }
+        // Return the created order with all details
+        return {
+          id: order.id,
+          orderNumber: order.orderNumber,
+          quantity: order.quantity,
+          latitude: order.latitude,
+          longitude: order.longitude,
+          basePrice: verification.basePrice,
+          totalPrice:
+            order.totalPrice instanceof Decimal ? order.totalPrice : new Decimal(order.totalPrice),
+          discount:
+            order.discount instanceof Decimal ? order.discount : new Decimal(order.discount),
+          shippingCost:
+            order.shippingCost instanceof Decimal
+              ? order.shippingCost
+              : new Decimal(order.shippingCost),
+          status: order.status,
+          items: allocations,
+          createdAt: order.createdAt,
+          updatedAt: order.updatedAt,
+        };
+      } catch (error: any) {
+        // Transaction will be automatically rolled back
+        logger.error('Error creating order, transaction rolled back', {
+          error: error.message,
+          stack: error.stack,
+        });
+        throw new Error(error.message || 'Failed to create order');
+      }
+    });
   }
 
   /**

@@ -1,4 +1,4 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model, DataTypes, Transaction } from 'sequelize';
 import { sequelize } from '../config/database';
 import logger from '../utils/logger';
 
@@ -19,13 +19,15 @@ export class Warehouse extends Model<WarehouseAttributes> implements WarehouseAt
   public location?: any; // PostGIS GEOGRAPHY point
   public stock!: number;
 
-  // Method to update stock
-  async updateStock(quantity: number): Promise<void> {
+  // Method to update stock with transaction support
+  async updateStock(quantity: number, transaction?: Transaction): Promise<void> {
     if (this.stock < quantity) {
-      throw new Error(`Not enough stock available in warehouse ${this.name}`);
+      throw new Error(
+        `Not enough stock available in warehouse ${this.name}. Available: ${this.stock}, Required: ${quantity}`,
+      );
     }
     this.stock -= quantity;
-    await this.save();
+    await this.save({ transaction });
   }
 }
 
