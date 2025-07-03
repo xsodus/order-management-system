@@ -11,9 +11,9 @@ afterEach(async () => {
     await Warehouse.truncate({ cascade: true, force: true });
     await seedWarehouses();
     // Truncate order items first due to foreign key constraints
-    await OrderItem.destroy({ where: {}, truncate: true, cascade: true });
+    await OrderItem.truncate({ cascade: true, force: true });
     // Then truncate orders
-    await Order.destroy({ where: {}, truncate: true, cascade: true });
+    await Order.truncate({ cascade: true, force: true });
   } catch (error) {
     console.error('Failed to clean up test data:', error);
   }

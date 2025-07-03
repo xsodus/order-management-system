@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Order Pricing and Discount Integration Tests Shipping Cost Calculations should vary shipping cost based on quantity (same location): shippingCostsSnapshot 1`] = `
+[
+  2.0386,
+  20.3863,
+  101.9313,
+]
+`;
