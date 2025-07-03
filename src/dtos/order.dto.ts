@@ -1,4 +1,4 @@
-import { OrderStatus } from '../models/order.model';
+import { OrderStatus, OrderItem } from '../models/order.model';
 import Decimal from 'decimal.js';
 
 // DTO for verifying an order without submitting
@@ -13,6 +13,14 @@ export interface CreateOrderDto {
   quantity: number;
   latitude: number;
   longitude: number;
+}
+
+// Extended interface for OrderItem with warehouse information
+export interface OrderItemWithWarehouse extends OrderItem {
+  warehouseName: string;
+  latitude: number;
+  longitude: number;
+  stock: number;
 }
 
 // Warehouse allocation in response
@@ -87,7 +95,7 @@ export class OrderMapper {
     };
   }
 
-  static toListResponseDto(orders: any[], total: number): OrderResponseDto[] {
+  static toListResponseDto(orders: any[]): OrderResponseDto[] {
     return orders.map(order => this.toResponseDto(order));
   }
 }

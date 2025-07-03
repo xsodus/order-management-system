@@ -361,7 +361,7 @@ export class OrderService {
   /**
    * Get all orders (no filtering)
    */
-  async getOrders(): Promise<{ orders: any[]; total: number }> {
+  async getOrders(): Promise<{ orders: Order[]; total: number }> {
     const { count, rows } = await Order.findAndCountAll({
       include: [
         {

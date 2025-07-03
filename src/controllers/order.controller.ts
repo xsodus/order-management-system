@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { OrderService } from '../services/order.service';
-import { OrderMapper } from '../dtos/order.dto';
+import { OrderMapper, OrderItemWithWarehouse } from '../dtos/order.dto';
 import { getRequestLogger } from '../utils/logger/get-request-logger';
+import { WarehouseAttributes } from '../models/warehouse.model';
 
 export class OrderController {
   private orderService: OrderService;
@@ -98,12 +99,10 @@ export class OrderController {
     const logger = getRequestLogger(req);
     logger.info('Retrieving orders');
     try {
-      const { orders, total } = await this.orderService.getOrders();
+      const { orders } = await this.orderService.getOrders();
       // Merge warehouse data into each order's items
       const warehouseIds = Array.from(
-        new Set(
-          orders.flatMap((order: any) => (order.items || []).map((item: any) => item.warehouseId)),
-        ),
+        new Set(orders.flatMap(order => (order.items || []).map(item => item.warehouseId))),
       );
       // Fetch all warehouses in one query
       const warehouses = await (
@@ -112,22 +111,23 @@ export class OrderController {
         where: { id: warehouseIds },
         raw: true,
       });
-      const warehouseMap = new Map(warehouses.map((w: any) => [w.id, w]));
+      const warehouseMap = new Map<string, WarehouseAttributes>(warehouses.map(w => [w.id!, w]));
       // Attach warehouse info to each item
       for (const order of orders) {
         if (order.items) {
           for (const item of order.items) {
             const warehouse = warehouseMap.get(item.warehouseId);
             if (warehouse) {
-              item.warehouseName = warehouse.name;
-              item.latitude = warehouse.latitude;
-              item.longitude = warehouse.longitude;
-              item.stock = warehouse.stock;
+              const enhancedItem = item as OrderItemWithWarehouse;
+              enhancedItem.warehouseName = warehouse.name;
+              enhancedItem.latitude = warehouse.latitude;
+              enhancedItem.longitude = warehouse.longitude;
+              enhancedItem.stock = warehouse.stock;
             }
           }
         }
       }
-      res.status(200).json(OrderMapper.toListResponseDto(orders, total));
+      res.status(200).json(OrderMapper.toListResponseDto(orders));
     } catch (error: any) {
       logger.error('Failed to retrieve orders', {
         error: error.message,

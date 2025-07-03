@@ -120,6 +120,9 @@ export class Order
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
+  // Association - items will be populated when included in queries
+  public items?: OrderItem[];
+
   // Method to update the order status
   public async updateStatus(status: OrderStatus): Promise<void> {
     this.status = status;
