@@ -81,6 +81,9 @@ describe('Order Pricing and Discount Integration Tests', () => {
       // Verify shipping cost consistency between verify and create endpoints
       // Use a small tolerance for floating point comparisons
       expect(createResponse.body.shippingCost).toBe(verifyResponse.body.shippingCost);
+      expect(createResponse.body.basePrice).toBe(verifyResponse.body.basePrice);
+      expect(createResponse.body.totalPrice).toBe(verifyResponse.body.totalPrice);
+      expect(createResponse.body.discount).toBe(verifyResponse.body.discount);
     });
   });
 
@@ -111,6 +114,7 @@ describe('Order Pricing and Discount Integration Tests', () => {
       // and does NOT include shippingCost
       const expectedTotalPrice = basePrice.minus(discountDecimal);
 
+      expect(basePrice.toString()).toBe(response.body.basePrice.toString());
       // Compare as strings to avoid floating point issues
       expect(totalPriceDecimal.toString()).toBe(expectedTotalPrice.toString());
     });

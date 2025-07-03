@@ -44,7 +44,7 @@ app.use(morgan(config.logFormat));
 app.use(requestLogger); // Add our custom request logger
 
 // Routes
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_: Request, res: Response) => {
   res.json({
     message: 'Order Management API',
     version: '1.0.0',
@@ -67,7 +67,7 @@ app.use(
 );
 
 // Handle 404 errors
-app.all('*', (req: Request, res: Response, next: NextFunction) => {
+app.all('*', (req: Request, _: Response, next: NextFunction) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
