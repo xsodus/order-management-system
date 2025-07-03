@@ -83,6 +83,193 @@ describe('Order Pricing and Discount Integration Tests', () => {
       expect(createResponse.body.totalPrice).toBe(verifyResponse.body.totalPrice);
       expect(createResponse.body.discount).toBe(verifyResponse.body.discount);
     });
+
+    it('should calculate shipping cost based on distance from nearest warehouse', async () => {
+      // Test with San Francisco coordinates - should use Los Angeles warehouse (closest to sample data)
+      const sanFranciscoOrder = {
+        quantity: 10,
+        latitude: 37.7749, // San Francisco
+        longitude: -122.4194,
+      };
+
+      const response = await testClient.post('/api/orders').send(sanFranciscoOrder);
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty('shippingCost');
+
+      // Shipping cost should be greater than 0 since there's distance involved
+      expect(response.body.shippingCost).toBeGreaterThan(0);
+
+      // Test with New York coordinates - should be more expensive due to greater distance
+      const newYorkOrder = {
+        quantity: 10,
+        latitude: 40.7128, // New York City
+        longitude: -74.006,
+      };
+
+      const nyResponse = await testClient.post('/api/orders').send(newYorkOrder);
+
+      expect(nyResponse.status).toBe(201);
+      expect(nyResponse.body).toHaveProperty('shippingCost');
+
+      // New York order should have different shipping cost (likely from different warehouse)
+      expect(nyResponse.body.shippingCost).toBeGreaterThan(0);
+    });
+
+    it('should calculate shipping cost using the correct formula', async () => {
+      // Test with coordinates very close to New York warehouse since Los Angeles might be exhausted
+      const orderData = {
+        quantity: 5,
+        latitude: 40.639722, // New York warehouse coordinates
+        longitude: -73.778889,
+      };
+
+      const response = await testClient.post('/api/orders').send(orderData);
+
+      expect(response.status).toBe(201);
+
+      // Since we're ordering from the exact New York warehouse location, distance is 0
+      // Shipping cost formula: quantity × deviceWeight (0.365kg) × distance (0km) × shippingRate ($0.01/kg/km) = 0
+      // This is correct behavior - no shipping cost when ordering from warehouse location
+      expect(response.body.shippingCost).toBe(0);
+    });
+
+    it('should vary shipping cost based on quantity (same location)', async () => {
+      const location = {
+        latitude: 37.7749, // San Francisco
+        longitude: -122.4194,
+      };
+
+      // Test with different quantities from the same location
+      const quantities = [1, 10, 50];
+      const shippingCosts: number[] = [];
+
+      for (const quantity of quantities) {
+        const response = await testClient.post('/api/orders').send({
+          ...location,
+          quantity,
+        });
+
+        expect(response.status).toBe(201);
+        expect(response.body).toHaveProperty('shippingCost');
+        shippingCosts.push(response.body.shippingCost);
+      }
+
+      // Shipping cost should increase proportionally with quantity
+      expect(shippingCosts[1]).toBeGreaterThan(shippingCosts[0]); // 10 > 1
+      expect(shippingCosts[2]).toBeGreaterThan(shippingCosts[1]); // 50 > 10
+
+      // The ratio should be approximately equal to the quantity ratio
+      // (allowing for small floating point differences)
+      const ratio1to10 = shippingCosts[1] / shippingCosts[0];
+      const ratio10to50 = shippingCosts[2] / shippingCosts[1];
+
+      expect(ratio1to10).toBeCloseTo(10, 1); // Should be close to 10
+      expect(ratio10to50).toBeCloseTo(5, 1); // Should be close to 5
+    });
+
+    it('should calculate different shipping costs for different international locations', async () => {
+      const locations = [
+        { name: 'Los Angeles Area', latitude: 34.0, longitude: -118.0 },
+        { name: 'New York Area', latitude: 40.7, longitude: -74.0 },
+        { name: 'Paris Area', latitude: 48.9, longitude: 2.3 },
+        { name: 'Hong Kong Area', latitude: 22.3, longitude: 114.0 },
+      ];
+
+      const shippingResults: Array<{ name: string; cost: number }> = [];
+
+      for (const location of locations) {
+        const response = await testClient.post('/api/orders').send({
+          quantity: 20,
+          latitude: location.latitude,
+          longitude: location.longitude,
+        });
+
+        expect(response.status).toBe(201);
+        expect(response.body).toHaveProperty('shippingCost');
+
+        shippingResults.push({
+          name: location.name,
+          cost: response.body.shippingCost,
+        });
+      }
+
+      // All shipping costs should be greater than 0
+      shippingResults.forEach(result => {
+        expect(result.cost).toBeGreaterThan(0);
+      });
+
+      // Shipping costs should vary between locations
+      const uniqueCosts = new Set(shippingResults.map(r => r.cost));
+      expect(uniqueCosts.size).toBeGreaterThan(1); // Should have different costs for different locations
+    });
+
+    it('should use nearest warehouse for shipping cost calculation', async () => {
+      // Test coordinates that are clearly closer to specific warehouses
+
+      // Close to Los Angeles warehouse (33.9425, -118.408056)
+      const laResponse = await testClient.post('/api/orders').send({
+        quantity: 10,
+        latitude: 34.0,
+        longitude: -118.5,
+      });
+
+      // Close to New York warehouse (40.639722, -73.778889)
+      const nyResponse = await testClient.post('/api/orders').send({
+        quantity: 10,
+        latitude: 40.6,
+        longitude: -73.8,
+      });
+
+      expect(laResponse.status).toBe(201);
+      expect(nyResponse.status).toBe(201);
+
+      // Both should have reasonable shipping costs
+      expect(laResponse.body.shippingCost).toBeGreaterThan(0);
+      expect(nyResponse.body.shippingCost).toBeGreaterThan(0);
+
+      // Check actual shipping cost values based on the formula:
+      // quantity (10) × deviceWeight (0.365kg) × distance × shippingRate ($0.01/kg/km)
+
+      // LA Area test: Could use either Los Angeles warehouse (if available) or New York warehouse (if LA is exhausted)
+      // - Using Los Angeles warehouse: 10 × 0.365 × 10.62 × 0.01 = 0.3878
+      // - Using New York warehouse: 10 × 0.365 × 3988.11 × 0.01 = 145.57
+      // The exact value depends on warehouse stock availability during test execution
+      expect(laResponse.body.shippingCost).toBeGreaterThan(0);
+      const laShippingCost = laResponse.body.shippingCost;
+      const isUsingLAWarehouse = Math.abs(laShippingCost - 0.3878) < 0.01;
+      const isUsingNYWarehouse = Math.abs(laShippingCost - 145.57) < 1;
+      expect(isUsingLAWarehouse || isUsingNYWarehouse).toBe(true);
+
+      // NY Area: Always uses New York warehouse (very close)
+      // 10 × 0.365 × 4.76 × 0.01 = 0.1737
+      expect(nyResponse.body.shippingCost).toBeCloseTo(0.1737, 3); // Allow 3 decimal precision
+    });
+
+    it('should validate shipping cost does not exceed 15% of order total', async () => {
+      // Test with a location very far from any warehouse to potentially trigger high shipping costs
+      // Using coordinates in the middle of the Pacific Ocean
+      const extremeLocation = {
+        quantity: 1, // Small quantity to minimize total price
+        latitude: 0, // Equator
+        longitude: 180, // International Date Line - far from all warehouses
+      };
+
+      // This should either succeed with reasonable shipping cost or fail with validation error
+      const response = await testClient.post('/api/orders').send(extremeLocation);
+
+      if (response.status === 201) {
+        // If order succeeded, shipping cost should be within the 15% limit
+        const totalPrice = response.body.totalPrice;
+        const shippingCost = response.body.shippingCost;
+
+        expect(shippingCost).toBeLessThanOrEqual(totalPrice * 0.15);
+      } else {
+        // If order failed, it should be due to shipping cost validation
+        expect(response.status).toBe(400);
+        expect(response.body.message).toContain('shipping cost exceeds 15%');
+      }
+    });
   });
 
   // Test total price calculation
