@@ -66,9 +66,7 @@ describe('Order Pricing and Discount Integration Tests', () => {
     it('should calculate shipping cost properly', async () => {
       // First, verify an order to check the calculated shipping cost
       const verifyResponse = await testClient.get('/api/orders/verify').query({
-        quantity: sampleOrderData.quantity,
-        latitude: sampleOrderData.latitude,
-        longitude: sampleOrderData.longitude,
+        ...sampleOrderData,
       });
 
       expect(verifyResponse.status).toBe(200);
