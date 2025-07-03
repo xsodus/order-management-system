@@ -4,8 +4,8 @@ import Warehouse, { seedWarehouses } from '../models/warehouse.model';
 import { testClient, sampleOrderData } from './testHelpers';
 import Decimal from 'decimal.js';
 
-// Clean up after each test
-afterEach(async () => {
+// Clean up before each test
+beforeEach(async () => {
   try {
     await Warehouse.truncate({ cascade: true, force: true });
     await seedWarehouses();

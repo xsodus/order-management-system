@@ -5,8 +5,8 @@ import { OrderStatus } from '../models/order.model';
 import { Order, OrderItem } from '../models/order.model';
 import Warehouse, { seedWarehouses } from '../models/warehouse.model';
 
-// Clean up after each test
-afterEach(async () => {
+// Clean up before each test
+beforeEach(async () => {
   try {
     await Warehouse.truncate({ cascade: true, force: true });
     await seedWarehouses();
@@ -20,8 +20,6 @@ afterEach(async () => {
 });
 
 describe('Order API Integration Tests', () => {
-  let orderId: string;
-
   // Test order verification
   describe('GET /api/orders/verify', () => {
     it('should verify an order successfully', async () => {
@@ -56,6 +54,7 @@ describe('Order API Integration Tests', () => {
   // Test order creation
   describe('POST /api/orders', () => {
     it('should create an order successfully', async () => {
+      let orderId: string;
       const response = await testClient.post('/api/orders').send(sampleOrderData);
 
       expect(response.status).toBe(201);
