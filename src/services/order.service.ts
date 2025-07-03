@@ -352,7 +352,6 @@ export class OrderService {
           error: error.message,
           stack: error.stack,
         });
-        transaction.rollback();
         throw new Error(error.message || 'Failed to create order');
       }
     });
