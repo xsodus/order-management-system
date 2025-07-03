@@ -256,7 +256,7 @@ describe('Order Pricing and Discount Integration Tests', () => {
       expect(nyResponse.body.shippingCost).toBe(0.1737);
     });
 
-    it('should validate shipping cost does not exceed 15% of order total', async () => {
+    it('should validate shipping cost does exceed 15% of order total', async () => {
       // Test with a location very far from any warehouse to potentially trigger high shipping costs
       // Using coordinates in the middle of the Pacific Ocean
       const extremeLocation = {
@@ -267,18 +267,8 @@ describe('Order Pricing and Discount Integration Tests', () => {
 
       // This should either succeed with reasonable shipping cost or fail with validation error
       const response = await testClient.post('/api/orders').send(extremeLocation);
-
-      if (response.status === 201) {
-        // If order succeeded, shipping cost should be within the 15% limit
-        const totalPrice = response.body.totalPrice;
-        const shippingCost = response.body.shippingCost;
-
-        expect(shippingCost).toBeLessThanOrEqual(totalPrice * 0.15);
-      } else {
-        // If order failed, it should be due to shipping cost validation
-        expect(response.status).toBe(400);
-        expect(response.body.message).toContain('shipping cost exceeds 15%');
-      }
+      expect(response.status).toBe(400);
+      expect(response.body.message).toContain('shipping cost exceeds 15%');
     });
   });
 
