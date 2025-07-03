@@ -99,3 +99,4 @@ POST /orders
   - Configure tests to spin up isolated Docker containers for testing
   - Ensure tests can run independently of local environment
 - [x] Update data warehouse to query data by using ST_Distance function from PostGIS extension
+- [x] Create a new endpoint called "PUT /warehouse" with a new controller call WarehouseController to fill the stock inside Warehouse table

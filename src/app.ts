@@ -6,6 +6,7 @@ import swaggerUi from 'swagger-ui-express';
 
 // Import routes
 import orderRoutes from './routes/order.routes';
+import warehouseRoutes from './routes/warehouse.routes';
 
 // Import middleware
 import { errorMiddleware, AppError } from './middlewares/error.middleware';
@@ -54,6 +55,7 @@ app.get('/', (_: Request, res: Response) => {
 
 // API routes
 app.use('/api/orders', orderRoutes);
+app.use('/api/warehouses', warehouseRoutes);
 
 // Swagger documentation
 app.use(

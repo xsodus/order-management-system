@@ -341,6 +341,115 @@ API documentation for the Order Management System. This system allows you to ver
           },
           required: ['status', 'message'],
         },
+        CreateWarehouseDto: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'Name of the warehouse',
+              minLength: 1,
+              maxLength: 100,
+              example: 'Seattle Distribution Center',
+            },
+            latitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Latitude of the warehouse location',
+              minimum: -90,
+              maximum: 90,
+              example: 47.608013,
+            },
+            longitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Longitude of the warehouse location',
+              minimum: -180,
+              maximum: 180,
+              example: -122.335167,
+            },
+            stock: {
+              type: 'integer',
+              description: 'Initial stock quantity',
+              minimum: 0,
+              example: 500,
+            },
+          },
+          required: ['name', 'latitude', 'longitude', 'stock'],
+        },
+        UpdateWarehouseStockDto: {
+          type: 'object',
+          properties: {
+            stock: {
+              type: 'integer',
+              description: 'New stock quantity',
+              minimum: 0,
+              example: 750,
+            },
+          },
+          required: ['stock'],
+        },
+        WarehouseResponseDto: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string',
+              format: 'uuid',
+              description: 'Unique identifier of the warehouse',
+              example: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            },
+            name: {
+              type: 'string',
+              description: 'Name of the warehouse',
+              example: 'Seattle Distribution Center',
+            },
+            latitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Latitude of the warehouse location',
+              example: 47.608013,
+            },
+            longitude: {
+              type: 'number',
+              format: 'double',
+              description: 'Longitude of the warehouse location',
+              example: -122.335167,
+            },
+            stock: {
+              type: 'integer',
+              description: 'Current stock quantity',
+              example: 500,
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Timestamp when the warehouse was created',
+              example: '2024-01-15T10:30:00.000Z',
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time',
+              description: 'Timestamp when the warehouse was last updated',
+              example: '2024-01-15T10:30:00.000Z',
+            },
+          },
+          required: ['id', 'name', 'latitude', 'longitude', 'stock'],
+        },
+        ErrorResponse: {
+          type: 'object',
+          properties: {
+            status: {
+              type: 'string',
+              description: 'Error status',
+              example: 'error',
+            },
+            message: {
+              type: 'string',
+              description: 'Error message describing what went wrong',
+              example: 'Resource not found',
+            },
+          },
+          required: ['status', 'message'],
+        },
       },
       responses: {
         BadRequest: {
@@ -413,6 +522,11 @@ API documentation for the Order Management System. This system allows you to ver
         name: 'Orders',
         description:
           'Order management operations including verification, creation, and retrieval. The system supports device orders with automatic warehouse allocation optimization and quantity-based pricing.',
+      },
+      {
+        name: 'Warehouses',
+        description:
+          'Warehouse management operations including creation, stock updates, and inventory tracking. Warehouses store devices and serve as fulfillment centers with geographic location-based shipping optimization.',
       },
     ],
   },
