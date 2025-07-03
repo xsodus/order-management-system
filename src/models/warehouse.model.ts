@@ -66,6 +66,13 @@ Warehouse.init(
     sequelize,
     tableName: 'warehouses',
     timestamps: false,
+    indexes: [
+      {
+        name: 'location_index',
+        fields: ['location'],
+        using: 'GIST', // Use GIST index for spatial data
+      },
+    ],
     hooks: {
       beforeCreate: (warehouse: Warehouse) => {
         // Automatically create location from latitude and longitude
