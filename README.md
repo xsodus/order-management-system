@@ -416,11 +416,6 @@ To verify or update your App Service environment variables:
 2. Navigate to **Settings** → **Secrets and variables** → **Actions**
 3. Add or update each environment secret (key/value pair) for your production environment
 
-### Live Demo
-
-You can test the live deployment at:
-[https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs](https://akkapon-order-management-htd6hhgzg7arfyew.southeastasia-01.azurewebsites.net/api-docs)
-
 ## Scalability
 
 The application is designed with scalability in mind:
